@@ -4,30 +4,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 개요
 
-이 저장소는 Claude Code 설정(에이전트, 스킬)을 공유하기 위한 템플릿 레포지토리입니다. 빌드/테스트/린트 명령어가 없으며, 모든 파일은 Markdown 형식입니다.
+AI-Native 해커톤 평가 시스템. 참가자 제출 → 관리자 AI 자동 평가 → 결과 공개 흐름을 하나의 웹 앱에서 처리한다.
 
+- **기술 스택**: Next.js 15 (App Router) + TypeScript, Tailwind CSS + shadcn/ui, Drizzle ORM + SQLite
+- **빌드**: `npm run dev` (개발), `npm run build` (프로덕션)
+- **DB**: `npx drizzle-kit push` (스키마 적용), `npx tsx src/db/seed.ts` (시드 데이터)
 
 ## 저장소 구조
 
 ```
 .claude/
   agents/          # Claude Code 서브 에이전트 정의
-    code-reviewer.md
-    prd-to-roadmap.md
-    sprint-close.md
-    sprint-planner.md
   skills/          # Claude Code 스킬 정의
-    karpathy-guidelines/
-    writing-plans/
+src/
+  app/             # Next.js App Router
+    layout.tsx     # 루트 레이아웃
+    page.tsx       # 랜딩 페이지
+    submit/[sessionId]/page.tsx   # 참가자 제출 폼
+    check/[sessionId]/page.tsx    # 참가자 확인/결과 조회
+    admin/
+      layout.tsx   # 관리자 레이아웃 (인증 가드)
+      page.tsx     # 관리자 로그인
+      dashboard/page.tsx          # 세션 목록 대시보드
+      session/[sessionId]/page.tsx           # 세션 상세
+      session/[sessionId]/lucky-draw/page.tsx  # 행운상 추첨
+    api/           # API Routes (Phase 2~)
+  components/
+    ui/            # shadcn/ui 자동 생성 컴포넌트
+    layouts/       # 공통 레이아웃 (header, footer, admin-nav)
+    submit/        # 제출 폼 도메인 컴포넌트
+    check/         # 확인/결과 도메인 컴포넌트
+    admin/         # 관리자 도메인 컴포넌트
+  lib/
+    mock-data.ts   # 목업 데이터 (Phase 2에서 API로 교체)
+    utils.ts       # 공통 유틸리티
+    validations.ts # zod 검증 스키마
+  db/
+    schema.ts      # Drizzle ORM 스키마
+    index.ts       # DB 연결
+    seed.ts        # 시드 데이터
+    migrations/    # 마이그레이션 파일
+  types/
+    index.ts       # 공통 타입 정의
 docs/
-  PRD.md           # 제품 요구사항 문서 (사용하는 프로젝트에서 생성)
-  ROADMAP.md       # 프로젝트 로드맵 (prd-to-roadmap 에이전트가 생성)
-  plans/           # 구현 계획 문서 (YYYY-MM-DD-<feature-name>.md)
+  PRD.md           # 제품 요구사항 문서
+  ROADMAP.md       # 프로젝트 로드맵
   sprint/          # 스프린트 문서 및 검증 보고서
     sprint{N}.md
     sprint{N}/     # 스크린샷, Playwright 보고서
-README.md          # 저장소 소개 및 사용 방법
-CLAUDE.md          # Claude Code 설정 파일
+public/
+  screenshots/     # 배포 URL 스크린샷 (Phase 4)
+README.md
+CLAUDE.md
 ```
 
 ## 에이전트 파일 형식 (`.claude/agents/*.md`)
