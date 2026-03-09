@@ -25,7 +25,7 @@ export default async function CheckPage({ params }: CheckPageProps) {
       <Card>
         <CardHeader>
           <CardTitle>내 제출 내역 조회</CardTitle>
-          <CardDescription>이름과 사번을 입력하여 제출 내역과 평가 결과를 확인하세요.</CardDescription>
+          <CardDescription>이름과 이메일을 입력하여 제출 내역과 평가 결과를 확인하세요.</CardDescription>
         </CardHeader>
         <CardContent>
           <CheckForm sessionId={sessionId} />

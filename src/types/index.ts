@@ -27,7 +27,7 @@ export interface Submission {
   id: string;
   sessionId: string;
   name: string;
-  employeeId: string;
+  email: string;
   repoUrl: string;
   deployUrl: string | null;
   submittedAt: string;

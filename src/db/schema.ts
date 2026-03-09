@@ -23,7 +23,7 @@ export const submissions = sqliteTable("submissions", {
     .notNull()
     .references(() => evaluationSessions.id),
   name: text("name").notNull(),
-  employeeId: text("employee_id").notNull(),
+  email: text("email").notNull(),
   repoUrl: text("repo_url").notNull(),
   deployUrl: text("deploy_url"),
   submittedAt: text("submitted_at").notNull().default(sql`(datetime('now'))`),

@@ -35,7 +35,7 @@ export function CheckForm({ sessionId }: CheckFormProps) {
     await new Promise((res) => setTimeout(res, 300));
 
     const found = mockSubmissions.find(
-      (s) => s.name === data.name && s.employeeId === data.employeeId
+      (s) => s.name === data.name && s.email === data.email
     );
 
     if (!found) {
@@ -67,15 +67,16 @@ export function CheckForm({ sessionId }: CheckFormProps) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="employeeId">사번</Label>
+          <Label htmlFor="email">이메일</Label>
           <Input
-            id="employeeId"
-            placeholder="EMP001"
-            {...register("employeeId")}
-            aria-invalid={!!errors.employeeId}
+            id="email"
+            type="email"
+            placeholder="example@company.com"
+            {...register("email")}
+            aria-invalid={!!errors.email}
           />
-          {errors.employeeId && (
-            <p className="text-xs text-red-600">{errors.employeeId.message}</p>
+          {errors.email && (
+            <p className="text-xs text-red-600">{errors.email.message}</p>
           )}
         </div>
 
@@ -87,7 +88,7 @@ export function CheckForm({ sessionId }: CheckFormProps) {
       {/* 결과 */}
       {notFound && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center text-sm text-yellow-800">
-          제출 내역을 찾을 수 없습니다. 이름과 사번을 다시 확인해주세요.
+          제출 내역을 찾을 수 없습니다. 이름과 이메일을 다시 확인해주세요.
         </div>
       )}
 

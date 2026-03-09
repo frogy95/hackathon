@@ -62,16 +62,17 @@ export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
         {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
       </div>
 
-      {/* 사번 */}
+      {/* 이메일 */}
       <div className="space-y-1.5">
-        <Label htmlFor="employeeId">사번 *</Label>
+        <Label htmlFor="email">이메일 *</Label>
         <Input
-          id="employeeId"
-          placeholder="EMP001"
-          {...register("employeeId")}
-          aria-invalid={!!errors.employeeId}
+          id="email"
+          type="email"
+          placeholder="example@company.com"
+          {...register("email")}
+          aria-invalid={!!errors.email}
         />
-        {errors.employeeId && <p className="text-xs text-red-600">{errors.employeeId.message}</p>}
+        {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
       </div>
 
       {/* GitHub URL */}

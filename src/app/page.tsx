@@ -34,7 +34,7 @@ export default function HomePage() {
             <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
             <CardTitle>간편한 제출</CardTitle>
             <CardDescription>
-              이름, 사번, GitHub URL만 입력하면 제출 완료. 마감 카운트다운으로 시간을 확인하세요.
+              이름, 이메일, GitHub URL만 입력하면 제출 완료. 마감 카운트다운으로 시간을 확인하세요.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -54,7 +54,7 @@ export default function HomePage() {
             <Clock className="h-8 w-8 text-amber-500 mb-2" />
             <CardTitle>실시간 결과 조회</CardTitle>
             <CardDescription>
-              이름과 사번으로 언제든지 제출 상태와 평가 결과를 확인할 수 있습니다.
+              이름과 이메일로 언제든지 제출 상태와 평가 결과를 확인할 수 있습니다.
             </CardDescription>
           </CardHeader>
         </Card>
