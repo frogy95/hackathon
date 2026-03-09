@@ -12,7 +12,7 @@ export default function HomePage() {
       <section className="text-center space-y-4">
         <h1 className="text-4xl font-bold text-zinc-900">해커톤 평가 시스템</h1>
         <p className="text-lg text-zinc-600 max-w-xl mx-auto">
-          AI-Native 해커톤 참가자 제출, 자동 평가, 결과 공개를 하나의 플랫폼에서 처리합니다.
+          유비케어 AI-Native 해커톤
         </p>
         <div className="flex items-center justify-center gap-3 pt-2">
           <Button asChild size="lg">
