@@ -45,3 +45,11 @@ export const updateSessionSchema = z.object({
 });
 
 export type UpdateSessionData = z.infer<typeof updateSessionSchema>;
+
+// 제출 수정 스키마
+export const updateSubmissionSchema = z.object({
+  excluded: z.boolean().optional(),
+  adminNote: z.string().optional(),
+});
+
+export type UpdateSubmissionData = z.infer<typeof updateSubmissionSchema>;

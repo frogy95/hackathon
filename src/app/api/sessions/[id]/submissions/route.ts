@@ -1,13 +1,69 @@
 import { NextRequest } from "next/server";
-import { eq, and } from "drizzle-orm";
+import { eq, and, like, or, asc, desc } from "drizzle-orm";
 import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
-import { apiSuccess, apiError, ErrorCode, parseBody } from "@/lib/api-utils";
+import { apiSuccess, apiError, ErrorCode, parseBody, withAdminAuth } from "@/lib/api-utils";
 import { submissionSchema } from "@/lib/validations";
 
 interface Context {
   params: Promise<{ id: string }>;
 }
+
+// GET /api/sessions/[id]/submissions — 제출 목록 조회 (관리자 전용)
+export const GET = withAdminAuth(async (request: NextRequest, context: unknown) => {
+  const { id: sessionId } = await (context as Context).params;
+
+  const session = await db
+    .select()
+    .from(evaluationSessions)
+    .where(eq(evaluationSessions.id, sessionId))
+    .then((r) => r[0]);
+
+  if (!session) {
+    return apiError(ErrorCode.NOT_FOUND.code, "세션을 찾을 수 없습니다.", ErrorCode.NOT_FOUND.status);
+  }
+
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get("status");
+  const excludedParam = searchParams.get("excluded");
+  const search = searchParams.get("search");
+  const sort = searchParams.get("sort") ?? "submittedAt";
+  const order = searchParams.get("order") ?? "desc";
+
+  // 동적 where 조건 조합
+  const conditions = [eq(submissions.sessionId, sessionId)];
+
+  if (status) {
+    conditions.push(eq(submissions.status, status));
+  }
+  if (excludedParam !== null) {
+    conditions.push(eq(submissions.excluded, excludedParam === "true"));
+  }
+  if (search) {
+    conditions.push(
+      or(
+        like(submissions.name, `%${search}%`),
+        like(submissions.email, `%${search}%`)
+      )!
+    );
+  }
+
+  // 정렬 컬럼 매핑
+  const sortColumn =
+    sort === "name"
+      ? submissions.name
+      : sort === "totalScore"
+        ? submissions.totalScore
+        : submissions.submittedAt;
+
+  const rows = await db
+    .select()
+    .from(submissions)
+    .where(and(...conditions))
+    .orderBy(order === "asc" ? asc(sortColumn) : desc(sortColumn));
+
+  return apiSuccess(rows);
+});
 
 // POST /api/sessions/[id]/submissions — 제출 생성/수정 (upsert)
 export async function POST(request: NextRequest, context: Context) {

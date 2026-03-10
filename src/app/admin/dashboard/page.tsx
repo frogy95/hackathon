@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SessionCard } from "@/components/admin/SessionCard";
 import { CreateSessionModal } from "@/components/admin/CreateSessionModal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { clearAdminAuth } from "@/lib/auth";
 import { PlusCircle, LogOut } from "lucide-react";
 
@@ -70,8 +71,14 @@ export default function AdminDashboardPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-zinc-400">
-          <p className="text-lg">불러오는 중...</p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-zinc-200 p-5 space-y-3">
+              <Skeleton className="h-5 w-2/3" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/3" />
+            </div>
+          ))}
         </div>
       ) : sessions.length === 0 ? (
         <div className="text-center py-20 text-zinc-400">

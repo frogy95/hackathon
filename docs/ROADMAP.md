@@ -18,9 +18,9 @@
 
 | 항목 | 상태 |
 |------|------|
-| 전체 진행률 | 37.5% (Sprint 3/8 완료) |
-| 현재 Phase | Phase 2 (Sprint 3 완료) |
-| 다음 마일스톤 | Sprint 4 - 제출 목록 관리 API + CSV 내보내기 + MVP 마무리 |
+| 전체 진행률 | 50% (Sprint 4/8 완료) |
+| 현재 Phase | Phase 2 완료 (Sprint 4 완료) |
+| 다음 마일스톤 | Sprint 5 - GitHub 데이터 수집 + AI 평가 엔진 |
 | MVP 목표 | Phase 2 완료 시점 |
 
 ---
@@ -196,7 +196,7 @@ Phase 1: 프로젝트 초기화 + 프론트엔드 UI 쉘
 
 ## Phase 2: 백엔드 API + 핵심 기능 연결 (Sprint 3-4, 2주) - MVP 완성
 
-### 🔄 상태: 진행 중
+### ✅ 상태: 완료 (Sprint 3 완료 2026-03-10 / Sprint 4 완료 2026-03-10)
 
 ### 목표
 Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 관리자 관리의 핵심 흐름을 완성한다. MVP로서 독립 배포 가능한 상태를 만든다.
@@ -240,29 +240,30 @@ Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 
   - 프론트엔드 debounce 연동 (입력 후 500ms 대기 후 검증)
   - 검증: 유효/무효/private URL에 대한 검증 결과 표시
 
-#### Sprint 4: 관리자 기능 연결 + MVP 마무리 (4주차)
+#### Sprint 4: 관리자 기능 연결 + MVP 마무리 (4주차) — ✅ 완료 (2026-03-10)
 
-- ⬜ **T2-6. 제출 목록 관리 API** (복잡도: M) [FR-006, FR-007]
+- ✅ **T2-6. 제출 목록 관리 API** (복잡도: M) [FR-006, FR-007]
   - `GET /api/sessions/[id]/submissions` - 전체 제출 목록 (필터/정렬/검색)
   - `PATCH /api/sessions/[id]/submissions/[subId]` - 제외/복원, 관리자 메모
   - 프론트엔드 제출 현황 테이블 연결
   - 검증: 목록 조회/필터/제외/메모 기능 동작 확인
 
-- ⬜ **T2-7. CSV 내보내기** (복잡도: S) [FR-015]
+- ✅ **T2-7. CSV 내보내기** (복잡도: S) [FR-015]
   - `GET /api/sessions/[id]/export/csv` - 전체 제출 목록 + 점수 CSV 다운로드
   - 프론트엔드 내보내기 버튼 연결
   - 검증: CSV 파일 다운로드 및 내용 정확성 확인
 
-- ⬜ **T2-8. 에러 처리 및 로딩 상태 통합** (복잡도: M)
+- ✅ **T2-8. 에러 처리 및 로딩 상태 통합** (복잡도: M)
   - 모든 API 호출에 로딩 스피너/스켈레톤 적용
-  - API 오류 시 사용자 친화적 에러 메시지 표시
-  - 네트워크 오류 재시도 로직 (tanstack-query 또는 SWR)
-  - 검증: 네트워크 지연/오류 시 UI 정상 동작
+  - API 오류 시 사용자 친화적 에러 메시지 표시 (sonner toast)
+  - alert() → toast.error/success() 교체 (SessionActions, CreateSessionModal)
+  - 검증: Toast 알림 및 스켈레톤 UI 정상 동작
 
-- ⬜ **T2-9. MVP 통합 테스트 및 버그 수정** (복잡도: M)
+- ✅ **T2-9. MVP 통합 테스트 및 버그 수정** (복잡도: M)
   - 참가자 전체 흐름 테스트: 제출 -> 확인 -> 수정 -> 마감 후 거부
   - 관리자 전체 흐름 테스트: 로그인 -> 세션 생성 -> 제출 관리
-  - 발견된 버그 수정
+  - mock-data.ts 삭제, npm run build 통과
+  - PATCH route 타입 오류(500 크래시) 수정
   - 검증: E2E 흐름 이상 없음
 
 ### 완료 기준 (Definition of Done)
