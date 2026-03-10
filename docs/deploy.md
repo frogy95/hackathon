@@ -4,6 +4,12 @@
 
 - ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
 - ✅ 신규 라우트 인식 확인: `/api/sessions/[id]/submissions/[subId]`, `/api/sessions/[id]/export/csv`
+- ✅ `POST /api/auth/admin` — 로그인 성공 확인
+- ✅ `GET /api/sessions/[id]/submissions` (인증 없이) — 401 반환 확인
+- ✅ `GET /api/sessions/[id]/submissions` (인증 후) — 10건 반환, 필터(`?status=done`) 동작 확인
+- ✅ `PATCH /api/sessions/[id]/submissions/sub-002` `{"excluded":true}` — 제외 처리 정상 반환
+- ✅ `PATCH /api/sessions/[id]/submissions/sub-002` `{"excluded":false}` — 복원 처리 정상 반환
+- ✅ `GET /api/sessions/[id]/export/csv` — HTTP 200, `text/csv` Content-Type, BOM 포함, 데이터 정상 확인
 
 ## 수동 검증 필요 항목
 
