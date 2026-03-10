@@ -29,9 +29,11 @@ export const PATCH = withAdminAuth(async (request: NextRequest, context: unknown
 
   const { excluded, adminNote } = parsed.data;
 
-  const updateData: Partial<typeof submission> & { updatedAt: string } = {
-    updatedAt: new Date().toISOString(),
-  };
+  const updateData: {
+    updatedAt: string;
+    excluded?: boolean;
+    adminNote?: string | null;
+  } = { updatedAt: new Date().toISOString() };
   if (excluded !== undefined) updateData.excluded = excluded;
   if (adminNote !== undefined) updateData.adminNote = adminNote || null;
 
