@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
+    "dev:restart": "npx kill-port 3000 3030 && next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -42,6 +43,7 @@
     "drizzle-kit": "^0.31.9",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "kill-port": "^2.0.1",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",
     "typescript": "^5"
