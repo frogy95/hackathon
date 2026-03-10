@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { ExternalLink, Pencil, Check, Loader2, RefreshCw } from "lucide-react";
+import { ExternalLink, Pencil, Check, Loader2 } from "lucide-react";
 import type { SubmissionStatus } from "@/types";
 
 interface SubmissionRowData {
@@ -24,7 +24,6 @@ interface SubmissionRowProps {
   submission: SubmissionRowData;
   onToggleExclude: (id: string) => Promise<void>;
   onUpdateNote: (id: string, note: string) => Promise<void>;
-  onReEvaluate: (id: string) => Promise<void>;
 }
 
 const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondary" | "warning" | "success" | "destructive" }> = {
@@ -35,12 +34,11 @@ const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondar
   error: { label: "오류", variant: "destructive" },
 };
 
-export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onReEvaluate }: SubmissionRowProps) {
+export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: SubmissionRowProps) {
   const [editingNote, setEditingNote] = useState(false);
   const [noteValue, setNoteValue] = useState(submission.adminNote ?? "");
   const [excludeLoading, setExcludeLoading] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
-  const [reEvalLoading, setReEvalLoading] = useState(false);
 
   const { label, variant } = statusConfig[submission.status];
   const submittedAt = new Date(submission.submittedAt).toLocaleString("ko-KR", {
@@ -62,15 +60,6 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onReE
     await onToggleExclude(submission.id);
     setExcludeLoading(false);
   };
-
-  const handleReEvaluate = async () => {
-    setReEvalLoading(true);
-    await onReEvaluate(submission.id);
-    setReEvalLoading(false);
-  };
-
-  // 재평가 가능 상태: error 또는 stuck된 collecting/evaluating
-  const canReEvaluate = submission.status === "error" || submission.status === "evaluating" || submission.status === "collecting";
 
   return (
     <TableRow className={submission.excluded ? "bg-zinc-100 opacity-60" : ""}>
@@ -141,39 +130,21 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onReE
         )}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1">
-          {canReEvaluate && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs text-amber-600 hover:text-amber-700"
-              onClick={handleReEvaluate}
-              disabled={reEvalLoading}
-              title="재평가"
-            >
-              {reEvalLoading ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <RefreshCw className="h-3 w-3" />
-              )}
-            </Button>
+        <Button
+          size="sm"
+          variant={submission.excluded ? "outline" : "ghost"}
+          className="h-7 text-xs"
+          onClick={handleToggleExclude}
+          disabled={excludeLoading}
+        >
+          {excludeLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : submission.excluded ? (
+            "복원"
+          ) : (
+            "제외"
           )}
-          <Button
-            size="sm"
-            variant={submission.excluded ? "outline" : "ghost"}
-            className="h-7 text-xs"
-            onClick={handleToggleExclude}
-            disabled={excludeLoading}
-          >
-            {excludeLoading ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : submission.excluded ? (
-              "복원"
-            ) : (
-              "제외"
-            )}
-          </Button>
-        </div>
+        </Button>
       </TableCell>
     </TableRow>
   );

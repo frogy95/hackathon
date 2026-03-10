@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadarChart } from "./RadarChart";
@@ -34,6 +35,30 @@ const criteriaLabels: Record<string, { label: string; max: number }> = {
   ux: { label: "완성도 및 UX", max: 25 },
   idea: { label: "아이디어 및 활용 가치", max: 15 },
 };
+
+// 기존 JSON 형식 reasoning을 마크다운으로 변환 (하위 호환)
+function normalizeReasoning(text: string): string {
+  // 이미 마크다운이면 그대로 반환
+  if (text.includes("###")) return text;
+
+  // JSON 파싱 시도 (구 형식 호환)
+  try {
+    const parsed = JSON.parse(text) as {
+      summary?: string;
+      sub_items?: Array<{ name: string; score: number; max_score: number; reasoning: string }>;
+    };
+    if (parsed.sub_items && Array.isArray(parsed.sub_items)) {
+      return parsed.sub_items
+        .map((s) => `### ${s.name} (${s.score}/${s.max_score})\n${s.reasoning}`)
+        .join("\n\n");
+    }
+    if (parsed.summary) return parsed.summary;
+  } catch {
+    // JSON이 아님 — 텍스트 그대로 반환
+  }
+
+  return text;
+}
 
 export function ProjectReport({ report }: { report: ProjectReportData }) {
   return (
@@ -133,6 +158,7 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
         {Object.entries(report.reasoning).map(([key, text]) => {
           const { label, max } = criteriaLabels[key];
           const score = report.scores[key as keyof typeof report.scores];
+          const mdText = normalizeReasoning(text);
           return (
             <Card key={key}>
               <CardHeader className="pb-2">
@@ -144,7 +170,9 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-zinc-700 leading-relaxed">{text}</p>
+                <div className="text-sm text-zinc-700 leading-relaxed prose prose-sm max-w-none prose-headings:text-zinc-800 prose-headings:font-semibold prose-h3:text-sm prose-h3:mt-3 prose-h3:mb-1">
+                  <ReactMarkdown>{mdText}</ReactMarkdown>
+                </div>
               </CardContent>
             </Card>
           );

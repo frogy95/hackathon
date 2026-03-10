@@ -209,10 +209,17 @@ function extractJson(text: string): EvaluationResult {
   }
 }
 
+// 모델 ID 매핑
+const MODEL_MAP: Record<string, string> = {
+  haiku: "claude-haiku-4-5-20251001",
+  sonnet: "claude-sonnet-4-6",
+};
+
 // Claude API 호출 + 응답 파싱
 export async function evaluateWithAI(
   data: CollectedData,
-  hasDeployUrl: boolean
+  hasDeployUrl: boolean,
+  model?: string
 ): Promise<EvaluationResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -223,8 +230,11 @@ export async function evaluateWithAI(
   const trimmedData = trimPrompt(data);
   const userPrompt = buildUserPrompt(trimmedData);
 
+  // 모델 선택: 별칭(haiku/sonnet) 또는 직접 모델 ID, 기본값 haiku
+  const modelId = MODEL_MAP[model ?? "haiku"] ?? model ?? MODEL_MAP["haiku"];
+
   const message = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+    model: modelId,
     max_tokens: 4096,
     temperature: 0,
     system: SYSTEM_PROMPT,
@@ -261,16 +271,18 @@ export async function saveEvaluationResult(
   // scores 테이블에 대항목 4개 저장
   for (const category of result.categories) {
     const scoreId = crypto.randomUUID();
+    // reasoning을 마크다운 형식으로 저장 (가독성 향상)
+    const reasoningMd = category.sub_items
+      .map((s) => `### ${s.name} (${s.score}/${s.max_score})\n${s.reasoning}`)
+      .join("\n\n");
+
     await db.insert(scores).values({
       id: scoreId,
       submissionId,
       criteriaKey: category.key,
       score: category.score,
       maxScore: category.max_score,
-      reasoning: JSON.stringify({
-        summary: category.sub_items.map((s) => `${s.name}(${s.score}/${s.max_score}): ${s.reasoning}`).join("\n"),
-        sub_items: category.sub_items,
-      }),
+      reasoning: reasoningMd,
     });
   }
 

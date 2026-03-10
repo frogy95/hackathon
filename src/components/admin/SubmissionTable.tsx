@@ -106,25 +106,6 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
     toast.success("메모가 저장되었습니다.");
   };
 
-  const reEvaluate = async (id: string) => {
-    const res = await fetch(`/api/sessions/${sessionId}/submissions/${id}/re-evaluate`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      toast.error(json.error?.message ?? "재평가 요청에 실패했습니다.");
-      return;
-    }
-
-    const json = await res.json();
-    setSubmissions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: json.data.status, adminNote: json.data.adminNote } : s))
-    );
-    toast.success("재평가가 완료되었습니다.");
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
@@ -186,7 +167,6 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
                 submission={submission}
                 onToggleExclude={toggleExclude}
                 onUpdateNote={updateNote}
-                onReEvaluate={reEvaluate}
               />
             ))
           )}

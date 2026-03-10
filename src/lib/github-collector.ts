@@ -166,11 +166,10 @@ export async function collectGitHubData(repoUrl: string): Promise<CollectedData>
     return results;
   }
 
-  const [documents, configContents, sourceContents] = await Promise.all([
-    fetchBatch(docFiles),
-    fetchBatch(configFilePaths),
-    fetchBatch(sourceFiles),
-  ]);
+  // GitHub API rate limit 방지를 위해 순차 실행
+  const documents = await fetchBatch(docFiles);
+  const configContents = await fetchBatch(configFilePaths);
+  const sourceContents = await fetchBatch(sourceFiles);
 
   // 6. 최근 커밋 수집
   let commitSummary: CommitSummary = { totalCount: 0, recentMessages: [] };
