@@ -129,3 +129,47 @@ const parsed = JSON.parse(text) as { ... };
 ## 결론
 
 Critical 이슈 없음. Important 이슈 3건은 모두 영향도가 낮으며 현재 사용 환경에서 실질적 버그를 일으키지 않습니다. Sprint 6 착수 전 M-1(중복 try-catch 정리) 및 M-3(inArray 최적화) 정도를 간단히 해결하면 충분합니다. 나머지 항목은 향후 리팩토링 시 참고 자료로 남깁니다.
+
+---
+
+## 추가 리뷰 — Sprint 5.1 후속 변경 (2026-03-10)
+
+### 변경 내용
+
+1. `@tailwindcss/typography` 패키지 설치, `globals.css`에 `@plugin` 등록
+2. `EvaluateButton.tsx` — 독립 카드 레이아웃으로 개선 (border/rounded-lg/p-4)
+3. `SubmissionTable.tsx` — `useEffect`로 `initialSubmissions` 동기화 추가
+4. `page.tsx` (세션 상세) — `EvaluateButton`을 헤더 액션 영역 밖으로 분리
+
+### 새로운 Important 이슈
+
+#### [M-4] `SubmissionTable.tsx` — useEffect 낙관적 업데이트 소실 위험
+
+**위치**: `src/components/admin/SubmissionTable.tsx` L42-44
+
+`router.refresh()`가 실행되면 서버 컴포넌트가 재렌더링되어 `initialSubmissions` prop이 갱신되고, `useEffect`가 `setSubmissions(initialSubmissions)`를 실행함. 이때 사용자가 메모 편집 인라인 UI를 열고 있거나 낙관적 상태(제외/메모)가 적용된 직후라면 로컬 상태가 서버 데이터로 덮어씌워질 수 있음. 평가 완료 후 `router.refresh()` 트리거가 메모 입력 중에 발생하면 입력 중인 메모가 소실됨.
+
+**영향도**: 낮음 (드문 시나리오이나 데이터 소실 가능)
+
+**권고**: SubmissionRow에서 편집 중 상태를 부모에게 알려 갱신을 억제하거나, 편집 상태가 활성화된 경우 `useEffect` 내부에서 갱신을 지연하는 방어 로직 추가 검토.
+
+#### [M-5] `EvaluateButton.tsx` — `state === "done"` 노출 시간 부재
+
+**위치**: `src/components/admin/EvaluateButton.tsx` L69-72
+
+평가 완료 시 `setState("done")` 직후 `setState("idle")`을 호출하므로 "평가 완료" 버튼 상태가 사실상 UI에 노출되지 않음. 기능 문제는 없으나 `state === "done"` 분기(L193-197)가 dead code가 됨. 의도적 설계라면 해당 분기 제거, 잠시 표시 목적이라면 `setTimeout(() => setState("idle"), 2000)` 추가 권장.
+
+**영향도**: 낮음 (dead code, UX 개선 여지)
+
+### 새로운 Suggestion
+
+#### [S-4] Tailwind v4 `@plugin` 문법 환경 의존성
+
+**위치**: `src/app/globals.css` L2
+
+`@plugin "@tailwindcss/typography"` 문법은 Tailwind CSS v4 전용. 현재 v4 사용 중이라면 문제없음. v3 환경으로 이식 시 `tailwind.config.ts`의 `plugins` 배열 방식으로 전환 필요.
+
+### 추가 긍정적 평가
+
+- `EvaluateButton`을 독립 카드 컴포넌트로 분리하여 세션 상세 페이지의 관심사를 더 명확히 분리함.
+- `@tailwindcss/typography` 적용으로 AI 평가 근거 마크다운의 가독성이 크게 향상됨.

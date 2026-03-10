@@ -83,3 +83,32 @@
 | I-2: progressMap Dead Code | ✅ 코드 확인 | evaluation-runner.ts에 progressMap 없음 확인 |
 | I-3: done 건 재평가 | ✅ API 동작 확인 | reset 후 제출 1건에 대해 evaluate 정상 반환 |
 | I-4: 재평가 API 타임아웃 | ✅ 404 확인 | /re-evaluate 엔드포인트 404 반환 확인 |
+
+---
+
+## 후속 변경 검증 (2026-03-10)
+
+### 변경 사항 요약
+
+- `@tailwindcss/typography` 설치 및 `globals.css` `@plugin` 등록
+- `EvaluateButton.tsx` 독립 카드 레이아웃 개선
+- `SubmissionTable.tsx` `useEffect` `initialSubmissions` 동기화 추가
+- 세션 상세 페이지 `EvaluateButton` 위치 분리
+
+### 빌드 검증
+
+| 항목 | 결과 | 비고 |
+|------|------|------|
+| `npm run build` | ✅ 성공 | 사용자 직접 확인 완료 |
+| `@tailwindcss/typography` 패키지 설치 | ✅ package.json 반영 확인 | `^0.5.19` |
+| `globals.css @plugin` 문법 | ✅ 빌드 포함 | Tailwind v4 문법 정상 인식 |
+
+### 수동 검증 결과 (사용자 직접 완료)
+
+| 항목 | 결과 |
+|------|------|
+| EvaluateButton 모델 선택 드롭다운 | ✅ 완료 |
+| 평가 리셋 버튼 동작 | ✅ 완료 |
+| Sonnet 모델 평가 실행 | ✅ 완료 |
+| ProjectReport 마크다운 렌더링 | ✅ 완료 |
+| prose 클래스 heading 렌더링 | ✅ 완료 |
