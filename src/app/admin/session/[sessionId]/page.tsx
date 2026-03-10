@@ -5,9 +5,10 @@ import type { SubmissionStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SubmissionTable } from "@/components/admin/SubmissionTable";
+import { SessionActions } from "@/components/admin/SessionActions";
 import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
-import { ArrowLeft, BarChart2, Clock, StopCircle } from "lucide-react";
+import { ArrowLeft, BarChart2 } from "lucide-react";
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -90,14 +91,7 @@ export default async function SessionDetailPage({ params }: Props) {
 
         {/* 액션 버튼 */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Clock className="h-4 w-4 mr-1.5" />
-            마감 연장
-          </Button>
-          <Button variant="outline" size="sm">
-            <StopCircle className="h-4 w-4 mr-1.5" />
-            즉시 마감
-          </Button>
+          <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
           <Button size="sm" disabled title="Phase 3에서 연결 예정">
             평가 실행
           </Button>
