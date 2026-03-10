@@ -476,3 +476,10 @@ Sprint 5 완료 시 다음이 동작 가능한 상태가 된다:
 - 개별 재평가 버튼으로 에러 건 단독 재실행 가능
 
 > Sprint 6에서는 이 데이터를 결과 대시보드(순위표, 상세 리포트)와 연결하고 참가자 결과 조회를 완성한다.
+
+---
+
+## 검증 결과
+
+- [API 자동 검증 + Playwright 보고서](sprint5/playwright-report.md)
+- [코드 리뷰 보고서](sprint5/code-review-report.md)
