@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { checkAdminPassword, setAdminAuth } from "@/lib/auth";
 
 const loginSchema = z.object({
   password: z.string().min(1, "비밀번호를 입력해주세요"),
@@ -28,11 +27,17 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    if (!checkAdminPassword(data.password)) {
+    const res = await fetch("/api/auth/admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: data.password }),
+    });
+
+    if (!res.ok) {
       setError("password", { message: "비밀번호가 올바르지 않습니다" });
       return;
     }
-    setAdminAuth();
+
     router.push("/admin/dashboard");
   };
 

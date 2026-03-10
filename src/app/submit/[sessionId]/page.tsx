@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
+import { eq } from "drizzle-orm";
 import { Calendar, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { CountdownTimer } from "@/components/submit/countdown-timer";
 import { SubmissionForm } from "@/components/submit/submission-form";
-import { mockSession } from "@/lib/mock-data";
+import { db } from "@/db";
+import { evaluationSessions } from "@/db/schema";
 
 interface SubmitPageProps {
   params: Promise<{ sessionId: string }>;
@@ -13,12 +15,14 @@ interface SubmitPageProps {
 export default async function SubmitPage({ params }: SubmitPageProps) {
   const { sessionId } = await params;
 
-  // Phase 2에서 DB 조회로 교체
-  if (sessionId !== mockSession.id) {
-    notFound();
-  }
+  const session = await db
+    .select()
+    .from(evaluationSessions)
+    .where(eq(evaluationSessions.id, sessionId))
+    .then((r) => r[0]);
 
-  const session = mockSession;
+  if (!session) notFound();
+
   const isExpired = new Date(session.submissionDeadline) < new Date();
 
   return (
@@ -26,7 +30,7 @@ export default async function SubmitPage({ params }: SubmitPageProps) {
       {/* 세션 정보 */}
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-zinc-900">{session.name}</h1>
-        <p className="text-zinc-600">{session.description}</p>
+        {session.description && <p className="text-zinc-600">{session.description}</p>}
       </div>
 
       {/* 마감 정보 */}

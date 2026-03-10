@@ -8,7 +8,7 @@ type SessionStatus = "active" | "closed" | "results_published";
 interface SessionCardProps {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   submissionDeadline: string;
   status: SessionStatus;
   submissionCount: number;

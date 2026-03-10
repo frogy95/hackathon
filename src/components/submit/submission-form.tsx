@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,21 +15,79 @@ interface SubmissionFormProps {
   isExpired: boolean;
 }
 
+type GithubStatus = "idle" | "checking" | "valid" | "invalid";
+
 export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
   const [submittedData, setSubmittedData] = useState<SubmissionFormData | null>(null);
   const [submittedAt, setSubmittedAt] = useState<string>("");
+  const [submitError, setSubmitError] = useState<string>("");
+  const [githubStatus, setGithubStatus] = useState<GithubStatus>("idle");
+  const [githubMessage, setGithubMessage] = useState<string>("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
     register,
     handleSubmit,
+    watch,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<SubmissionFormData>({
     resolver: zodResolver(submissionSchema),
   });
 
+  const repoUrl = watch("repoUrl");
+
+  // GitHub URL 실시간 검증 (500ms debounce)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (!repoUrl || repoUrl.length < 10) {
+      setGithubStatus("idle");
+      return;
+    }
+
+    setGithubStatus("checking");
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/validate/github-url?url=${encodeURIComponent(repoUrl)}`);
+        const json = await res.json();
+        if (json.data?.valid) {
+          setGithubStatus("valid");
+          setGithubMessage("저장소가 확인되었습니다.");
+        } else {
+          setGithubStatus("invalid");
+          setGithubMessage(json.data?.reason ?? "저장소를 확인할 수 없습니다.");
+        }
+      } catch {
+        setGithubStatus("invalid");
+        setGithubMessage("검증 중 오류가 발생했습니다.");
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [repoUrl]);
+
   const onSubmit = async (data: SubmissionFormData) => {
-    // Phase 2에서 실제 API 호출로 교체
-    await new Promise((res) => setTimeout(res, 500)); // 목업 딜레이
+    setSubmitError("");
+    const res = await fetch(`/api/sessions/${sessionId}/submissions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const json = await res.json().catch(() => null);
+      const code = json?.error?.code;
+      if (code === "DEADLINE_PASSED") {
+        setError("root", { message: "제출 마감이 지났습니다." });
+      } else {
+        setSubmitError(json?.error?.message ?? "제출에 실패했습니다. 다시 시도해주세요.");
+      }
+      return;
+    }
+
     setSubmittedAt(new Date().toISOString());
     setSubmittedData(data);
   };
@@ -50,6 +109,17 @@ export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {submitError && (
+        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {submitError}
+        </div>
+      )}
+      {errors.root && (
+        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {errors.root.message}
+        </div>
+      )}
+
       {/* 이름 */}
       <div className="space-y-1.5">
         <Label htmlFor="name">이름 *</Label>
@@ -75,17 +145,35 @@ export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
         {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
       </div>
 
-      {/* GitHub URL */}
+      {/* GitHub URL + 실시간 검증 */}
       <div className="space-y-1.5">
         <Label htmlFor="repoUrl">GitHub 저장소 URL *</Label>
-        <Input
-          id="repoUrl"
-          type="url"
-          placeholder="https://github.com/username/repository"
-          {...register("repoUrl")}
-          aria-invalid={!!errors.repoUrl}
-        />
+        <div className="relative">
+          <Input
+            id="repoUrl"
+            type="url"
+            placeholder="https://github.com/username/repository"
+            {...register("repoUrl")}
+            aria-invalid={!!errors.repoUrl}
+            className="pr-8"
+          />
+          {githubStatus === "checking" && (
+            <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-zinc-400" />
+          )}
+          {githubStatus === "valid" && (
+            <CheckCircle className="absolute right-2.5 top-2.5 h-4 w-4 text-green-500" />
+          )}
+          {githubStatus === "invalid" && (
+            <XCircle className="absolute right-2.5 top-2.5 h-4 w-4 text-red-500" />
+          )}
+        </div>
         {errors.repoUrl && <p className="text-xs text-red-600">{errors.repoUrl.message}</p>}
+        {githubStatus === "valid" && (
+          <p className="text-xs text-green-600">{githubMessage}</p>
+        )}
+        {githubStatus === "invalid" && !errors.repoUrl && (
+          <p className="text-xs text-red-600">{githubMessage}</p>
+        )}
       </div>
 
       {/* 배포 URL (선택) */}

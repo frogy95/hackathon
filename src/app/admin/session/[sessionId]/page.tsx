@@ -1,9 +1,14 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
+import { eq } from "drizzle-orm";
+import type { SubmissionStatus } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SubmissionTable } from "@/components/admin/SubmissionTable";
-import { mockAdminSessions, mockAdminSubmissions } from "@/lib/mock-data";
-import { ArrowLeft, BarChart2, Clock, StopCircle } from "lucide-react";
+import { SessionActions } from "@/components/admin/SessionActions";
+import { db } from "@/db";
+import { evaluationSessions, submissions } from "@/db/schema";
+import { ArrowLeft, BarChart2 } from "lucide-react";
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -11,19 +16,35 @@ interface Props {
 
 export default async function SessionDetailPage({ params }: Props) {
   const { sessionId } = await params;
-  const session = mockAdminSessions.find((s) => s.id === sessionId) ?? {
-    id: sessionId,
-    name: sessionId,
-    description: "",
-    submissionDeadline: new Date().toISOString(),
-    status: "active" as const,
-    submissionCount: 0,
-    createdAt: new Date().toISOString(),
-    resultsPublished: false,
-  };
 
-  const submissions = mockAdminSubmissions.filter((s) => s.sessionId === sessionId);
-  const deadline = new Date(session.submissionDeadline).toLocaleString("ko-KR", {
+  const session = await db
+    .select()
+    .from(evaluationSessions)
+    .where(eq(evaluationSessions.id, sessionId))
+    .then((r) => r[0]);
+
+  if (!session) notFound();
+
+  const rawSubs = await db
+    .select()
+    .from(submissions)
+    .where(eq(submissions.sessionId, sessionId))
+    .orderBy(submissions.submittedAt);
+
+  const subs = rawSubs.map((s) => ({
+    ...s,
+    status: s.status as SubmissionStatus,
+  }));
+
+  const now = new Date();
+  const deadline = new Date(session.submissionDeadline);
+  const status = session.resultsPublished
+    ? "results_published"
+    : deadline < now
+      ? "closed"
+      : "active";
+
+  const deadlineStr = deadline.toLocaleString("ko-KR", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -49,35 +70,28 @@ export default async function SessionDetailPage({ params }: Props) {
             <h1 className="text-2xl font-bold text-zinc-900">{session.name}</h1>
             <Badge
               variant={
-                session.status === "active"
+                status === "active"
                   ? "success"
-                  : session.status === "closed"
+                  : status === "closed"
                     ? "warning"
                     : "info"
               }
             >
-              {session.status === "active"
+              {status === "active"
                 ? "진행중"
-                : session.status === "closed"
+                : status === "closed"
                   ? "마감"
                   : "결과공개"}
             </Badge>
           </div>
           <p className="text-sm text-zinc-500 mt-1">
-            마감일시: {deadline} · 제출 {submissions.length}건
+            마감일시: {deadlineStr} · 제출 {subs.length}건
           </p>
         </div>
 
         {/* 액션 버튼 */}
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm">
-            <Clock className="h-4 w-4 mr-1.5" />
-            마감 연장
-          </Button>
-          <Button variant="outline" size="sm">
-            <StopCircle className="h-4 w-4 mr-1.5" />
-            즉시 마감
-          </Button>
+          <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
           <Button size="sm" disabled title="Phase 3에서 연결 예정">
             평가 실행
           </Button>
@@ -94,7 +108,7 @@ export default async function SessionDetailPage({ params }: Props) {
       </div>
 
       {/* 제출 현황 테이블 */}
-      <SubmissionTable submissions={submissions} />
+      <SubmissionTable submissions={subs} />
     </div>
   );
 }

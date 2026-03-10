@@ -28,3 +28,20 @@ export const checkFormSchema = z.object({
 });
 
 export type CheckFormData = z.infer<typeof checkFormSchema>;
+
+// 세션 생성 스키마
+export const createSessionSchema = z.object({
+  name: z.string().min(1, "세션명을 입력해주세요."),
+  submissionDeadline: z.string().min(1, "마감일시를 입력해주세요."),
+  description: z.string().optional(),
+});
+
+export type CreateSessionData = z.infer<typeof createSessionSchema>;
+
+// 세션 수정 스키마
+export const updateSessionSchema = z.object({
+  submissionDeadline: z.string().optional(),
+  resultsPublished: z.boolean().optional(),
+});
+
+export type UpdateSessionData = z.infer<typeof updateSessionSchema>;

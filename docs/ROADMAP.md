@@ -18,9 +18,9 @@
 
 | 항목 | 상태 |
 |------|------|
-| 전체 진행률 | 25% (Sprint 2/8 완료) |
-| 현재 Phase | Phase 1 (Sprint 2 완료) |
-| 다음 마일스톤 | Phase 2 시작 - 백엔드 API + 핵심 기능 연결 |
+| 전체 진행률 | 37.5% (Sprint 3/8 완료) |
+| 현재 Phase | Phase 2 (Sprint 3 완료) |
+| 다음 마일스톤 | Sprint 4 - 제출 목록 관리 API + CSV 내보내기 + MVP 마무리 |
 | MVP 목표 | Phase 2 완료 시점 |
 
 ---
@@ -196,28 +196,28 @@ Phase 1: 프로젝트 초기화 + 프론트엔드 UI 쉘
 
 ## Phase 2: 백엔드 API + 핵심 기능 연결 (Sprint 3-4, 2주) - MVP 완성
 
-### 📋 상태: 예정
+### 🔄 상태: 진행 중
 
 ### 목표
 Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 관리자 관리의 핵심 흐름을 완성한다. MVP로서 독립 배포 가능한 상태를 만든다.
 
 ### 작업 목록
 
-#### Sprint 3: API 구현 + 참가자 기능 연결 (3주차)
+#### Sprint 3: API 구현 + 참가자 기능 연결 (3주차) — ✅ 완료 (2026-03-10)
 
-- ⬜ **T2-1. API Route 기반 구조 설계** (복잡도: S)
+- ✅ **T2-1. API Route 기반 구조 설계** (복잡도: S)
   - Next.js App Router API Routes 구조 확정 (`app/api/...`)
   - 공통 응답 포맷, 에러 핸들링 미들웨어
   - API 경로 목록 문서화
   - 검증: API 엔드포인트 1개 이상 호출 성공
 
-- ⬜ **T2-2. 관리자 인증 API** (복잡도: S)
+- ✅ **T2-2. 관리자 인증 API** (복잡도: S)
   - `POST /api/auth/admin` - 비밀번호 검증, 세션 토큰 발급
   - 환경 변수로 관리자 비밀번호 관리 (bcrypt 해시)
   - API Route 미들웨어: 관리자 전용 엔드포인트 보호
   - 검증: 올바른/잘못된 비밀번호로 인증 성공/실패 확인
 
-- ⬜ **T2-3. 평가 세션 CRUD API** (복잡도: M) [FR-001, FR-002]
+- ✅ **T2-3. 평가 세션 CRUD API** (복잡도: M) [FR-001, FR-002]
   - `POST /api/sessions` - 세션 생성 (세션명, 마감일시, 안내 문구)
   - `GET /api/sessions` - 세션 목록 조회
   - `GET /api/sessions/[id]` - 세션 상세 조회
@@ -226,7 +226,7 @@ Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 
   - 프론트엔드 관리자 대시보드 연결
   - 검증: 세션 생성/조회/수정 API 호출 및 UI 반영 확인
 
-- ⬜ **T2-4. 참가자 제출 API** (복잡도: L) [FR-004, FR-005]
+- ✅ **T2-4. 참가자 제출 API** (복잡도: L) [FR-004, FR-005]
   - `POST /api/sessions/[id]/submissions` - 제출 생성/수정
   - `GET /api/sessions/[id]/submissions/check` - 이름+이메일로 본인 제출 조회
   - GitHub URL 유효성 검증 (서버 사이드): Octokit으로 public repo 존재 여부 확인
@@ -235,7 +235,7 @@ Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 
   - 프론트엔드 제출 폼/확인 페이지 연결
   - 검증: 제출 생성/조회/수정/마감 후 거부 흐름 확인
 
-- ⬜ **T2-5. GitHub URL 실시간 검증** (복잡도: S) [FR-004]
+- ✅ **T2-5. GitHub URL 실시간 검증** (복잡도: S) [FR-004]
   - `GET /api/validate/github-url?url=...` - GitHub API로 repo 존재/public 여부 확인
   - 프론트엔드 debounce 연동 (입력 후 500ms 대기 후 검증)
   - 검증: 유효/무효/private URL에 대한 검증 결과 표시

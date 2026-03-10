@@ -1,11 +1,41 @@
 import Link from "next/link";
-import { ArrowRight, CheckCircle, BarChart3, Clock } from "lucide-react";
+import { eq, sql } from "drizzle-orm";
+import { ArrowRight, CheckCircle, BarChart3, Clock, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { db } from "@/db";
+import { evaluationSessions, submissions } from "@/db/schema";
 
-const DEMO_SESSION_ID = "session-2026-spring";
+export default async function HomePage() {
+  // 진행 중인 세션 목록 조회
+  const rows = await db
+    .select({
+      id: evaluationSessions.id,
+      name: evaluationSessions.name,
+      description: evaluationSessions.description,
+      submissionDeadline: evaluationSessions.submissionDeadline,
+      resultsPublished: evaluationSessions.resultsPublished,
+      submissionCount: sql<number>`count(${submissions.id})`,
+    })
+    .from(evaluationSessions)
+    .leftJoin(submissions, eq(submissions.sessionId, evaluationSessions.id))
+    .groupBy(evaluationSessions.id)
+    .orderBy(sql`${evaluationSessions.createdAt} DESC`);
 
-export default function HomePage() {
+  const now = new Date();
+  const sessions = rows.map((s) => {
+    const deadline = new Date(s.submissionDeadline);
+    const status = s.resultsPublished
+      ? "results_published"
+      : deadline < now
+        ? "closed"
+        : "active";
+    return { ...s, status, deadline };
+  });
+
+  const activeSessions = sessions.filter((s) => s.status === "active");
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 space-y-12">
       {/* 히어로 섹션 */}
@@ -14,17 +44,6 @@ export default function HomePage() {
         <p className="text-lg text-zinc-600 max-w-xl mx-auto">
           유비케어 AI-Native 해커톤
         </p>
-        <div className="flex items-center justify-center gap-3 pt-2">
-          <Button asChild size="lg">
-            <Link href={`/submit/${DEMO_SESSION_ID}`}>
-              제출하기
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button variant="outline" size="lg" asChild>
-            <Link href={`/check/${DEMO_SESSION_ID}`}>내 결과 확인</Link>
-          </Button>
-        </div>
       </section>
 
       {/* 기능 소개 */}
@@ -60,22 +79,73 @@ export default function HomePage() {
         </Card>
       </section>
 
-      {/* 현재 세션 */}
-      <section>
-        <Card className="border-zinc-200">
-          <CardHeader>
-            <CardTitle>현재 진행 중인 해커톤</CardTitle>
-            <CardDescription>2026 봄 해커톤 · 마감: 2026년 3월 20일 18:00</CardDescription>
-          </CardHeader>
-          <CardContent className="flex gap-3">
-            <Button asChild>
-              <Link href={`/submit/${DEMO_SESSION_ID}`}>제출하기</Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href={`/check/${DEMO_SESSION_ID}`}>결과 확인</Link>
-            </Button>
-          </CardContent>
-        </Card>
+      {/* 세션 목록 */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-zinc-900">
+          {activeSessions.length > 0 ? "현재 진행 중인 해커톤" : "해커톤 목록"}
+        </h2>
+
+        {sessions.length === 0 ? (
+          <Card className="border-zinc-200">
+            <CardContent className="py-12 text-center text-zinc-400">
+              진행 중인 해커톤이 없습니다.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {sessions.map((session) => (
+              <Card key={session.id} className="border-zinc-200">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-base">{session.name}</CardTitle>
+                    <Badge
+                      variant={
+                        session.status === "active"
+                          ? "success"
+                          : session.status === "closed"
+                            ? "warning"
+                            : "info"
+                      }
+                    >
+                      {session.status === "active"
+                        ? "진행중"
+                        : session.status === "closed"
+                          ? "마감"
+                          : "결과공개"}
+                    </Badge>
+                  </div>
+                  {session.description && (
+                    <CardDescription className="line-clamp-2">{session.description}</CardDescription>
+                  )}
+                  <p className="flex items-center gap-1.5 text-xs text-zinc-500 mt-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    마감:{" "}
+                    {session.deadline.toLocaleString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </CardHeader>
+                <CardContent className="flex gap-2">
+                  {session.status === "active" && (
+                    <Button asChild size="sm">
+                      <Link href={`/submit/${session.id}`}>
+                        제출하기
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  )}
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/check/${session.id}`}>결과 확인</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
