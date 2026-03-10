@@ -1,3 +1,51 @@
+# Sprint 5.1 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-10)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음 (빌드 아티팩트 확인)
+- ✅ 신규 라우트 인식 확인: `/api/sessions/[id]/evaluate/reset`
+- ✅ 삭제된 라우트 확인: `/api/sessions/[id]/submissions/[subId]/re-evaluate` → 404 반환
+- ✅ `POST /api/sessions/{id}/evaluate` (인증 없이) — 401 반환 확인
+- ✅ `POST /api/sessions/{id}/evaluate/reset` (인증 없이) — 401 반환 확인
+- ✅ `POST /api/sessions/session-2026-spring/evaluate/reset` (인증 후) — `{"message":"평가가 리셋되었습니다.","count":1}` 정상 반환
+- ✅ 존재하지 않는 세션 `/evaluate/reset` — 404 NOT_FOUND 반환 확인
+- ✅ `POST /api/sessions/session-2026-spring/evaluate` (`model:"haiku"`) — `{"message":"평가를 시작했습니다.","total":1}` 정상 반환
+- ✅ `GET /api/sessions/session-2026-spring/evaluate/progress` (인증 후) — `{ total, done, failed, inProgress, pending }` 정상 반환
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 1. EvaluateButton 모델 선택 UI 확인
+
+세션 상세 페이지(`/admin/session/session-2026-spring`)에서:
+
+- ⬜ "Haiku (빠름)" / "Sonnet (정밀)" 드롭다운이 평가 버튼 좌측에 표시되는지 확인
+- ⬜ 평가 실행 중 드롭다운이 비활성화되는지 확인
+- ⬜ 평가 완료 건이 있을 때 "평가 리셋" 버튼이 표시되는지 확인
+
+### 2. 평가 리셋 버튼 동작 확인
+
+- ⬜ "평가 리셋" 버튼 클릭 → 브라우저 confirm 다이얼로그 표시 확인
+- ⬜ 확인 클릭 → Toast "평가가 리셋되었습니다. (N건)" 표시 확인
+- ⬜ 제출 목록 상태가 "제출완료"로 리셋되어 표시되는지 확인
+
+### 3. 모델 선택 후 평가 실행 확인 (ANTHROPIC_API_KEY 필수)
+
+- ⬜ Sonnet 선택 후 평가 실행 → 평가 진행 확인
+- ⬜ 진행률 바 표시 확인
+- ⬜ 완료 Toast에 선택한 모델명 표시 확인
+
+### 4. ProjectReport 마크다운 렌더링 확인
+
+세션 결과 페이지(`/admin/session/session-2026-spring/results`)에서:
+
+- ⬜ 평가 완료된 제출의 상세 리포트 접속
+- ⬜ reasoning 텍스트에서 `### 항목명` 헤딩이 굵게 표시되는지 확인
+- ⬜ 세부 평가 항목이 마크다운 형식으로 표시되는지 확인
+
+---
+
 # Sprint 5 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-10)

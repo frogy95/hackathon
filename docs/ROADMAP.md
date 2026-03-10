@@ -320,22 +320,12 @@ Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 
 
 ## Phase 3: AI 평가 엔진 + 결과 대시보드 연결 (Sprint 5-6, 2주)
 
-### 🔄 상태: 진행 중 (Sprint 5 완료 2026-03-10 / Sprint 5.1 완료 2026-03-10)
+### 🔄 상태: 진행 중 (Sprint 5 완료 2026-03-10)
 
 ### 목표
 GitHub 저장소 데이터 수집 및 Claude API 기반 자동 평가를 구현하고, 결과 대시보드를 실제 데이터로 연결한다.
 
 ### 작업 목록
-
-#### Sprint 5.1: 평가 엔진 보완 및 UX 개선 — ✅ 완료 (2026-03-10)
-
-- ✅ **I-1 해소**: `github-collector.ts` — Promise.all → 순차 실행 변경 (동시 요청 최대 3개 제한)
-- ✅ **I-2 해소**: `evaluation-runner.ts` — progressMap, getProgress Dead Code 제거, model 파라미터 추가
-- ✅ **재평가 기능 제거**: `re-evaluate/route.ts` 삭제, SubmissionRow/SubmissionTable 정리
-- ✅ **평가 실행 동작 변경**: `evaluate/route.ts` — done 건 제외 필터 (`ne(status, "done")`)
-- ✅ **평가 리셋 API**: `POST /api/sessions/[id]/evaluate/reset` 신규 생성
-- ✅ **모델 선택 + 리셋 버튼**: `EvaluateButton.tsx` — haiku/sonnet 선택 `<select>` UI, 리셋 버튼 추가
-- ✅ **마크다운 렌더링**: `ai-evaluator.ts` — reasoning을 마크다운으로 저장, `ProjectReport.tsx` — react-markdown 렌더링 + 구 JSON 형식 하위 호환
 
 #### Sprint 5: 데이터 수집 + AI 평가 (5주차) — ✅ 완료 (2026-03-10)
 

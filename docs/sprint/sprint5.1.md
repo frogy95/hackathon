@@ -632,6 +632,13 @@ curl -s -X POST http://localhost:3000/api/sessions/{SESSION_ID}/evaluate \
 
 ---
 
+## 검증 결과
+
+- [검증 보고서 (자동/수동 항목 분류)](sprint5.1/validation-report.md)
+- [코드 리뷰 보고서](sprint5.1/code-review-report.md)
+
+---
+
 ## 예상 산출물
 
 Sprint 5.1 완료 시:
