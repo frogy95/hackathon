@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { toast } from "sonner";
 import {
   Table,
   TableHeader,
@@ -8,9 +9,10 @@ import {
   TableRow,
   TableHead,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { SubmissionFilters } from "./SubmissionFilters";
 import { SubmissionRow } from "./SubmissionRow";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp, ChevronDown, Download } from "lucide-react";
 import type { SubmissionStatus } from "@/types";
 
 type FilterStatus = "all" | SubmissionStatus;
@@ -29,10 +31,11 @@ interface SubmissionData {
 }
 
 interface SubmissionTableProps {
+  sessionId: string;
   submissions: SubmissionData[];
 }
 
-export function SubmissionTable({ submissions: initialSubmissions }: SubmissionTableProps) {
+export function SubmissionTable({ sessionId, submissions: initialSubmissions }: SubmissionTableProps) {
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,27 +66,67 @@ export function SubmissionTable({ submissions: initialSubmissions }: SubmissionT
       });
   }, [submissions, statusFilter, searchQuery, sortDir]);
 
-  const toggleExclude = (id: string) => {
+  const toggleExclude = async (id: string) => {
+    const submission = submissions.find((s) => s.id === id);
+    if (!submission) return;
+
+    const newExcluded = !submission.excluded;
+    const res = await fetch(`/api/sessions/${sessionId}/submissions/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ excluded: newExcluded }),
+    });
+
+    if (!res.ok) {
+      toast.error(newExcluded ? "제외 처리에 실패했습니다." : "복원에 실패했습니다.");
+      return;
+    }
+
     setSubmissions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, excluded: !s.excluded } : s))
+      prev.map((s) => (s.id === id ? { ...s, excluded: newExcluded } : s))
     );
+    toast.success(newExcluded ? "제외 처리되었습니다." : "복원되었습니다.");
   };
 
-  const updateNote = (id: string, note: string) => {
+  const updateNote = async (id: string, note: string) => {
+    const res = await fetch(`/api/sessions/${sessionId}/submissions/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminNote: note }),
+    });
+
+    if (!res.ok) {
+      toast.error("메모 저장에 실패했습니다.");
+      return;
+    }
+
     setSubmissions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, adminNote: note || null } : s))
     );
+    toast.success("메모가 저장되었습니다.");
   };
 
   return (
     <div className="space-y-4">
-      <SubmissionFilters
-        statusFilter={statusFilter}
-        searchQuery={searchQuery}
-        statusCounts={statusCounts}
-        onStatusChange={setStatusFilter}
-        onSearchChange={setSearchQuery}
-      />
+      <div className="flex items-center justify-between gap-4">
+        <SubmissionFilters
+          statusFilter={statusFilter}
+          searchQuery={searchQuery}
+          statusCounts={statusCounts}
+          onStatusChange={setStatusFilter}
+          onSearchChange={setSearchQuery}
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            window.location.href = `/api/sessions/${sessionId}/export/csv`;
+          }}
+        >
+          <Download className="h-4 w-4 mr-1.5" />
+          CSV 내보내기
+        </Button>
+      </div>
 
       <Table>
         <TableHeader>

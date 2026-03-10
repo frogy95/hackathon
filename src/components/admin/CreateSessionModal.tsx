@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -47,6 +48,7 @@ export function CreateSessionModal({ open, onClose, onCreated }: CreateSessionMo
       return;
     }
 
+    toast.success("세션이 생성되었습니다.");
     reset();
     onClose();
     onCreated?.();

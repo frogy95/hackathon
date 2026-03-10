@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { ExternalLink, Pencil, Check } from "lucide-react";
+import { ExternalLink, Pencil, Check, Loader2 } from "lucide-react";
 import type { SubmissionStatus } from "@/types";
 
 interface SubmissionRowData {
@@ -22,8 +22,8 @@ interface SubmissionRowData {
 
 interface SubmissionRowProps {
   submission: SubmissionRowData;
-  onToggleExclude: (id: string) => void;
-  onUpdateNote: (id: string, note: string) => void;
+  onToggleExclude: (id: string) => Promise<void>;
+  onUpdateNote: (id: string, note: string) => Promise<void>;
 }
 
 const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondary" | "warning" | "success" | "destructive" }> = {
@@ -37,6 +37,8 @@ const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondar
 export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: SubmissionRowProps) {
   const [editingNote, setEditingNote] = useState(false);
   const [noteValue, setNoteValue] = useState(submission.adminNote ?? "");
+  const [excludeLoading, setExcludeLoading] = useState(false);
+  const [noteLoading, setNoteLoading] = useState(false);
 
   const { label, variant } = statusConfig[submission.status];
   const submittedAt = new Date(submission.submittedAt).toLocaleString("ko-KR", {
@@ -46,9 +48,17 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
     minute: "2-digit",
   });
 
-  const handleNoteConfirm = () => {
-    onUpdateNote(submission.id, noteValue);
+  const handleNoteConfirm = async () => {
+    setNoteLoading(true);
+    await onUpdateNote(submission.id, noteValue);
+    setNoteLoading(false);
     setEditingNote(false);
+  };
+
+  const handleToggleExclude = async () => {
+    setExcludeLoading(true);
+    await onToggleExclude(submission.id);
+    setExcludeLoading(false);
   };
 
   return (
@@ -91,11 +101,22 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
               value={noteValue}
               onChange={(e) => setNoteValue(e.target.value)}
               className="h-7 text-xs w-32"
-              onKeyDown={(e) => e.key === "Enter" && handleNoteConfirm()}
+              onKeyDown={(e) => e.key === "Enter" && !noteLoading && handleNoteConfirm()}
               autoFocus
+              disabled={noteLoading}
             />
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleNoteConfirm}>
-              <Check className="h-3.5 w-3.5" />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={handleNoteConfirm}
+              disabled={noteLoading}
+            >
+              {noteLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Check className="h-3.5 w-3.5" />
+              )}
             </Button>
           </div>
         ) : (
@@ -113,9 +134,16 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
           size="sm"
           variant={submission.excluded ? "outline" : "ghost"}
           className="h-7 text-xs"
-          onClick={() => onToggleExclude(submission.id)}
+          onClick={handleToggleExclude}
+          disabled={excludeLoading}
         >
-          {submission.excluded ? "복원" : "제외"}
+          {excludeLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : submission.excluded ? (
+            "복원"
+          ) : (
+            "제외"
+          )}
         </Button>
       </TableCell>
     </TableRow>

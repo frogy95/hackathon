@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Toaster } from "sonner";
 import { getAdminAuth } from "@/lib/auth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,5 +24,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [pathname, router]);
 
   if (!checked) return null;
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <Toaster richColors position="bottom-right" />
+    </>
+  );
 }

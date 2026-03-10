@@ -108,7 +108,7 @@ export default async function SessionDetailPage({ params }: Props) {
       </div>
 
       {/* 제출 현황 테이블 */}
-      <SubmissionTable submissions={subs} />
+      <SubmissionTable sessionId={sessionId} submissions={subs} />
     </div>
   );
 }

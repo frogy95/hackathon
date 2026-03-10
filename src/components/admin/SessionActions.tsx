@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,6 +44,7 @@ export function SessionActions({ sessionId, currentDeadline }: SessionActionsPro
       return;
     }
     setExtendOpen(false);
+    toast.success("마감일시가 수정되었습니다.");
     router.refresh();
   };
 
@@ -57,9 +59,10 @@ export function SessionActions({ sessionId, currentDeadline }: SessionActionsPro
     });
     setLoading(false);
     if (!res.ok) {
-      alert("즉시 마감에 실패했습니다.");
+      toast.error("즉시 마감에 실패했습니다.");
       return;
     }
+    toast.success("즉시 마감되었습니다.");
     router.refresh();
   };
 
