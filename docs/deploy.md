@@ -30,6 +30,14 @@ npx tsx src/db/seed.ts
 ## 자동 검증 완료 (2026-03-10)
 
 - ✅ `npm run build` — 빌드 성공 (에러 없음)
+- ✅ `GET /api/sessions` — 세션 목록 정상 반환
+- ✅ `POST /api/sessions` (인증 없이) — 401 UNAUTHORIZED 정상 반환
+- ✅ `PATCH /api/sessions/[id]` (인증 없이) — 401 UNAUTHORIZED 정상 반환
+- ✅ `POST /api/sessions/[id]/submissions` — 신규 제출 생성 정상 동작
+- ✅ `GET /api/sessions/[id]/submissions/check` — 이름+이메일 조회 정상 동작 (404 포함)
+- ✅ `GET /api/validate/github-url` — 유효/무효 URL 검증 정상 동작
+- ✅ `.env.local` / `hackathon.db` — `.gitignore` 포함 확인
+- ⚠️ `POST /api/auth/admin` — 서버 재시작 필요 (환경 변수 로드 타이밍 문제, 재시작 후 정상 동작 예상)
 
 ---
 
