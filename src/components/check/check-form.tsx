@@ -8,19 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmissionDetail } from "./submission-detail";
 import { checkFormSchema, type CheckFormData } from "@/lib/validations";
-import { mockSubmissions, mockScores, mockSession } from "@/lib/mock-data";
 import type { Submission, Score } from "@/types";
 
 interface CheckFormProps {
   sessionId: string;
+  resultsPublished: boolean;
+  submissionDeadline: string;
 }
 
-export function CheckForm({ sessionId }: CheckFormProps) {
+export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: CheckFormProps) {
   const [result, setResult] = useState<{
     submission: Submission;
     scores: Score[];
   } | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [apiError, setApiError] = useState<string>("");
 
   const {
     register,
@@ -31,25 +33,31 @@ export function CheckForm({ sessionId }: CheckFormProps) {
   });
 
   const onSubmit = async (data: CheckFormData) => {
-    // Phase 2에서 실제 API 호출로 교체
-    await new Promise((res) => setTimeout(res, 300));
+    setApiError("");
+    setNotFound(false);
+    setResult(null);
 
-    const found = mockSubmissions.find(
-      (s) => s.name === data.name && s.email === data.email
-    );
+    const params = new URLSearchParams({ name: data.name, email: data.email });
+    const res = await fetch(`/api/sessions/${sessionId}/submissions/check?${params}`);
 
-    if (!found) {
+    if (res.status === 404) {
       setNotFound(true);
-      setResult(null);
       return;
     }
 
-    const scores = mockScores.filter((s) => s.submissionId === found.id);
-    setNotFound(false);
-    setResult({ submission: found as Submission, scores: scores as Score[] });
+    if (!res.ok) {
+      setApiError("조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    const json = await res.json();
+    setResult({
+      submission: json.data.submission as Submission,
+      scores: json.data.scores as Score[],
+    });
   };
 
-  const isDeadlinePassed = new Date(mockSession.submissionDeadline) < new Date();
+  const isDeadlinePassed = new Date(submissionDeadline) < new Date();
 
   return (
     <div className="space-y-6">
@@ -86,6 +94,12 @@ export function CheckForm({ sessionId }: CheckFormProps) {
       </form>
 
       {/* 결과 */}
+      {apiError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
+          {apiError}
+        </div>
+      )}
+
       {notFound && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center text-sm text-yellow-800">
           제출 내역을 찾을 수 없습니다. 이름과 이메일을 다시 확인해주세요.
@@ -97,8 +111,8 @@ export function CheckForm({ sessionId }: CheckFormProps) {
           submission={result.submission}
           scores={result.scores}
           isDeadlinePassed={isDeadlinePassed}
-          resultsPublished={mockSession.resultsPublished}
-          criteriaConfig={mockSession.criteriaConfig}
+          resultsPublished={resultsPublished}
+          criteriaConfig={null}
           sessionId={sessionId}
         />
       )}

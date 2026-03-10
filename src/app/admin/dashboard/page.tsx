@@ -1,20 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { SessionCard } from "@/components/admin/SessionCard";
 import { CreateSessionModal } from "@/components/admin/CreateSessionModal";
 import { clearAdminAuth } from "@/lib/auth";
-import { mockAdminSessions } from "@/lib/mock-data";
 import { PlusCircle, LogOut } from "lucide-react";
+
+interface SessionItem {
+  id: string;
+  name: string;
+  description: string | null;
+  submissionDeadline: string;
+  resultsPublished: boolean;
+  status: "active" | "closed" | "results_published";
+  submissionCount: number;
+  createdAt: string;
+}
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
+  const [sessions, setSessions] = useState<SessionItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    clearAdminAuth();
+  const fetchSessions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/sessions");
+      if (!res.ok) throw new Error("세션 목록 조회 실패");
+      const json = await res.json();
+      setSessions(json.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
+
+  const handleLogout = async () => {
+    await clearAdminAuth();
     router.push("/admin");
   };
 
@@ -23,7 +53,9 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900">평가 세션 목록</h1>
-          <p className="text-sm text-zinc-500 mt-1">총 {mockAdminSessions.length}개 세션</p>
+          {!loading && (
+            <p className="text-sm text-zinc-500 mt-1">총 {sessions.length}개 세션</p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setModalOpen(true)}>
@@ -37,20 +69,28 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {mockAdminSessions.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-20 text-zinc-400">
+          <p className="text-lg">불러오는 중...</p>
+        </div>
+      ) : sessions.length === 0 ? (
         <div className="text-center py-20 text-zinc-400">
           <p className="text-lg">세션이 없습니다</p>
           <p className="text-sm mt-1">새 세션을 생성해주세요</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {mockAdminSessions.map((session) => (
+          {sessions.map((session) => (
             <SessionCard key={session.id} {...session} />
           ))}
         </div>
       )}
 
-      <CreateSessionModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <CreateSessionModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={fetchSessions}
+      />
     </div>
   );
 }
