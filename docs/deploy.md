@@ -1,3 +1,52 @@
+# Sprint 5 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-10)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ 신규 라우트 인식 확인: `/api/sessions/[id]/evaluate`, `/api/sessions/[id]/evaluate/progress`, `/api/sessions/[id]/submissions/[subId]/re-evaluate`
+- ✅ `POST /api/sessions/{id}/evaluate` (인증 없이) — 401 반환 확인
+- ✅ `GET /api/sessions/{id}/evaluate/progress` (인증 없이) — 401 반환 확인
+- ✅ `POST /api/sessions/{id}/submissions/{subId}/re-evaluate` (인증 없이) — 401 반환 확인
+- ✅ `GET /api/sessions/session-2026-spring/evaluate/progress` (인증 후) — `{ total, done, failed, inProgress, pending }` 정상 반환
+- ✅ 존재하지 않는 세션 진행률 조회 — 404 NOT_FOUND 반환 확인
+- ✅ 진행 중 상태에서 평가 시작 재요청 — 409 EVALUATION_IN_PROGRESS 반환 확인
+- ✅ 존재하지 않는 제출 재평가 — 404 NOT_FOUND 반환 확인
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 사전 준비: 환경 변수 설정
+
+`.env.local`에 아래 항목을 추가합니다.
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-...   # Claude API 키 (필수)
+GITHUB_TOKEN=ghp_...           # GitHub Personal Access Token (선택, 미설정 시 rate limit 60 req/hr)
+```
+
+### 1. EvaluateButton UI 동작 확인
+
+세션 상세 페이지(`/admin/session/session-2026-spring`)에서:
+
+- ✅ "평가 실행" 버튼이 활성화 상태로 표시되는지 확인 (이전 Sprint에서는 disabled)
+- ✅ 제출이 0건인 세션에서는 버튼이 비활성화(`disabled`)인지 확인
+
+### 2. 실제 평가 실행 확인 (ANTHROPIC_API_KEY 필수)
+
+- ✅ "평가 실행" 버튼 클릭 → 버튼이 "평가 중..." + 스피너로 변경 확인
+- ✅ 진행률 바가 "0/N 완료" 텍스트와 함께 표시 확인
+- ✅ 2초 간격으로 진행률이 업데이트되는지 확인
+- ✅ 평가 완료 후 버튼이 "평가 완료" + 체크 아이콘으로 변경 확인
+- ✅ 완료 Toast 알림 표시 확인
+- ✅ DB에서 `scores` 테이블에 4개 대항목 행 저장 확인 (`npx drizzle-kit studio` 또는 SQL로 확인)
+
+### 3. 에러 처리 확인
+
+- ✅ `ANTHROPIC_API_KEY` 미설정 상태에서 평가 실행 → 해당 제출의 `adminNote`에 에러 메시지 저장 확인
+
+---
+
 # Sprint 4 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-10)

@@ -9,6 +9,7 @@ import { SessionActions } from "@/components/admin/SessionActions";
 import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
 import { ArrowLeft, BarChart2 } from "lucide-react";
+import { EvaluateButton } from "@/components/admin/EvaluateButton";
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -92,9 +93,11 @@ export default async function SessionDetailPage({ params }: Props) {
         {/* 액션 버튼 */}
         <div className="flex flex-wrap items-center gap-2">
           <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
-          <Button size="sm" disabled title="Phase 3에서 연결 예정">
-            평가 실행
-          </Button>
+          <EvaluateButton
+            sessionId={sessionId}
+            submissionCount={subs.filter((s) => !s.excluded).length}
+            doneCount={subs.filter((s) => !s.excluded && s.status === "done").length}
+          />
           <Button size="sm" variant="secondary" disabled title="Phase 3에서 연결 예정">
             결과 공개
           </Button>
