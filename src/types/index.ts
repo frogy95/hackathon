@@ -1,6 +1,6 @@
 // 공통 타입 정의
 
-export type SubmissionStatus = "submitted" | "evaluating" | "done" | "error";
+export type SubmissionStatus = "submitted" | "collecting" | "evaluating" | "done" | "error";
 
 export interface Session {
   id: string;

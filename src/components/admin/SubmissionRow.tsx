@@ -28,6 +28,7 @@ interface SubmissionRowProps {
 
 const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondary" | "warning" | "success" | "destructive" }> = {
   submitted: { label: "제출완료", variant: "secondary" },
+  collecting: { label: "수집중", variant: "secondary" },
   evaluating: { label: "평가중", variant: "warning" },
   done: { label: "평가완료", variant: "success" },
   error: { label: "오류", variant: "destructive" },

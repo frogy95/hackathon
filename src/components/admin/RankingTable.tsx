@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-type SortKey = "completeness" | "creativity" | "technical" | "presentation" | "total";
+type SortKey = "documentation" | "implementation" | "ux" | "idea" | "total";
 type SortDir = "asc" | "desc";
 
 interface RankingEntry {
@@ -22,10 +22,10 @@ interface RankingEntry {
   name: string;
   email: string;
   scores: {
-    completeness: number;
-    creativity: number;
-    technical: number;
-    presentation: number;
+    documentation: number;
+    implementation: number;
+    ux: number;
+    idea: number;
   };
   baseScore: number;
   bonusScore: number;
@@ -38,11 +38,11 @@ interface RankingTableProps {
 }
 
 const columns: Array<{ key: SortKey; label: string; max: number }> = [
-  { key: "completeness", label: "완성도", max: 30 },
-  { key: "creativity", label: "창의성", max: 25 },
-  { key: "technical", label: "기술", max: 25 },
-  { key: "presentation", label: "발표/문서", max: 20 },
-  { key: "total", label: "총점", max: 100 },
+  { key: "documentation", label: "문서화", max: 35 },
+  { key: "implementation", label: "구현력", max: 25 },
+  { key: "ux", label: "완성도/UX", max: 25 },
+  { key: "idea", label: "아이디어", max: 15 },
+  { key: "total", label: "총점", max: 110 },
 ];
 
 export function RankingTable({ rankings, sessionId }: RankingTableProps) {
@@ -128,10 +128,10 @@ export function RankingTable({ rankings, sessionId }: RankingTableProps) {
                   {entry.name}
                 </Link>
               </TableCell>
-              <TableCell className="text-right">{entry.scores.completeness}</TableCell>
-              <TableCell className="text-right">{entry.scores.creativity}</TableCell>
-              <TableCell className="text-right">{entry.scores.technical}</TableCell>
-              <TableCell className="text-right">{entry.scores.presentation}</TableCell>
+              <TableCell className="text-right">{entry.scores.documentation}</TableCell>
+              <TableCell className="text-right">{entry.scores.implementation}</TableCell>
+              <TableCell className="text-right">{entry.scores.ux}</TableCell>
+              <TableCell className="text-right">{entry.scores.idea}</TableCell>
               <TableCell className="text-right font-semibold">{entry.displayTotal}</TableCell>
               {includeBonus && (
                 <TableCell className="text-right text-zinc-400 text-xs">

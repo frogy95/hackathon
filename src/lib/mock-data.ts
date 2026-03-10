@@ -11,12 +11,15 @@ export const mockSession = {
   resultsPublished: true, // 결과 공개 여부 (check 페이지 테스트용)
   criteriaConfig: {
     criteria: [
-      { key: "completeness", label: "완성도", maxScore: 30 },
-      { key: "creativity", label: "창의성", maxScore: 25 },
-      { key: "technical", label: "기술적 구현", maxScore: 25 },
-      { key: "presentation", label: "발표/문서화", maxScore: 20 },
+      { key: "documentation", label: "AI-Native 문서화 체계", maxScore: 35 },
+      { key: "implementation", label: "기술 구현력", maxScore: 25 },
+      { key: "ux", label: "완성도 및 UX", maxScore: 25 },
+      { key: "idea", label: "아이디어 및 활용 가치", maxScore: 15 },
     ],
-    bonus: [{ key: "deployment", label: "배포 보너스", maxScore: 5 }],
+    bonus: [
+      { key: "deploy_exists", label: "배포 가점", maxScore: 3 },
+      { key: "visual_quality", label: "시각적 완성도", maxScore: 7 },
+    ],
   },
 };
 
@@ -31,9 +34,9 @@ export const mockSubmissions = [
     submittedAt: "2026-03-15T10:30:00+09:00",
     updatedAt: "2026-03-15T14:20:00+09:00",
     status: "done" as const,
-    totalScore: 88,
-    baseScore: 83,
-    bonusScore: 5,
+    totalScore: 93,
+    baseScore: 85,
+    bonusScore: 8,
   },
   {
     id: "sub-002",
@@ -69,38 +72,38 @@ export const mockScores = [
   {
     id: "score-001-1",
     submissionId: "sub-001",
-    criteriaKey: "completeness",
-    score: 26,
-    maxScore: 30,
+    criteriaKey: "documentation",
+    score: 32,
+    maxScore: 35,
     reasoning:
-      "핵심 기능이 모두 구현되어 있으며 UI/UX 완성도가 높습니다. 에러 처리가 일부 미흡하지만 전체적으로 완성도가 우수합니다.",
+      "PRD.md와 CLAUDE.md가 체계적으로 작성되어 있으며 AI 컨텍스트 파일이 잘 정의되어 있습니다. 진행 기록이 상세하게 남아 있어 우수합니다.",
   },
   {
     id: "score-001-2",
     submissionId: "sub-001",
-    criteriaKey: "creativity",
+    criteriaKey: "implementation",
     score: 22,
     maxScore: 25,
     reasoning:
-      "기존 서비스와 차별화된 AI 활용 방식이 인상적입니다. 사용자 맞춤형 추천 기능이 독창적입니다.",
+      "Next.js와 AI API를 효과적으로 결합했습니다. 코드 구조가 깔끔하고 TypeScript를 잘 활용했습니다. 아키텍처 설계가 명확합니다.",
   },
   {
     id: "score-001-3",
     submissionId: "sub-001",
-    criteriaKey: "technical",
+    criteriaKey: "ux",
     score: 20,
     maxScore: 25,
     reasoning:
-      "Next.js와 AI API를 효과적으로 결합했습니다. 코드 구조가 깔끔하고 TypeScript를 잘 활용했습니다.",
+      "핵심 기능이 모두 구현되어 있으며 UI 완성도가 높습니다. 에러 처리가 일부 미흡하지만 전체적으로 동작 완성도가 우수합니다.",
   },
   {
     id: "score-001-4",
     submissionId: "sub-001",
-    criteriaKey: "presentation",
-    score: 15,
-    maxScore: 20,
+    criteriaKey: "idea",
+    score: 11,
+    maxScore: 15,
     reasoning:
-      "README가 잘 작성되어 있으나 데모 영상이 없어 아쉽습니다. 기술 스택 설명이 충분합니다.",
+      "AI를 활용한 사용자 맞춤형 서비스 아이디어가 명확합니다. 문제 정의가 구체적이나 차별성 측면에서 보완 여지가 있습니다.",
   },
 ];
 
@@ -165,9 +168,9 @@ export const mockAdminSubmissions: Array<{
     status: "done",
     excluded: false,
     adminNote: null,
-    totalScore: 88,
-    baseScore: 83,
-    bonusScore: 5,
+    totalScore: 93,
+    baseScore: 85,
+    bonusScore: 8,
   },
   {
     id: "sub-002",
@@ -177,7 +180,7 @@ export const mockAdminSubmissions: Array<{
     repoUrl: "https://github.com/leeyh/smart-scheduler",
     deployUrl: "https://smart-scheduler.netlify.app",
     submittedAt: "2026-03-14T09:15:00+09:00",
-    status: "submitted",
+    status: "collecting",
     excluded: false,
     adminNote: null,
     totalScore: null,
@@ -240,8 +243,8 @@ export const mockAdminSubmissions: Array<{
     status: "done",
     excluded: false,
     adminNote: null,
-    totalScore: 75,
-    baseScore: 70,
+    totalScore: 71,
+    baseScore: 66,
     bonusScore: 5,
   },
   {
@@ -270,9 +273,9 @@ export const mockAdminSubmissions: Array<{
     status: "done",
     excluded: false,
     adminNote: null,
-    totalScore: 92,
-    baseScore: 87,
-    bonusScore: 5,
+    totalScore: 96,
+    baseScore: 86,
+    bonusScore: 10,
   },
   {
     id: "sub-009",
@@ -315,14 +318,14 @@ export const mockRankings = [
     repoUrl: "https://github.com/limny/doc-summarizer",
     deployUrl: "https://doc-summarizer.vercel.app",
     scores: {
-      completeness: 28,
-      creativity: 23,
-      technical: 22,
-      presentation: 14,
+      documentation: 30,
+      implementation: 23,
+      ux: 22,
+      idea: 11,
     },
-    baseScore: 87,
-    bonusScore: 5,
-    totalScore: 92,
+    baseScore: 86,
+    bonusScore: 10,
+    totalScore: 96,
     rank: 1,
   },
   {
@@ -332,14 +335,14 @@ export const mockRankings = [
     repoUrl: "https://github.com/kimcs/ai-hackathon-2026",
     deployUrl: "https://ai-hackathon.vercel.app",
     scores: {
-      completeness: 26,
-      creativity: 22,
-      technical: 20,
-      presentation: 15,
+      documentation: 32,
+      implementation: 22,
+      ux: 20,
+      idea: 11,
     },
-    baseScore: 83,
-    bonusScore: 5,
-    totalScore: 88,
+    baseScore: 85,
+    bonusScore: 8,
+    totalScore: 93,
     rank: 2,
   },
   {
@@ -349,14 +352,14 @@ export const mockRankings = [
     repoUrl: "https://github.com/kangji/health-tracker",
     deployUrl: "https://health-tracker.netlify.app",
     scores: {
-      completeness: 22,
-      creativity: 18,
-      technical: 17,
-      presentation: 13,
+      documentation: 22,
+      implementation: 17,
+      ux: 18,
+      idea: 9,
     },
-    baseScore: 70,
+    baseScore: 66,
     bonusScore: 5,
-    totalScore: 75,
+    totalScore: 71,
     rank: 3,
   },
 ];
@@ -371,16 +374,16 @@ export const mockProjectReports: Record<
     repoUrl: string;
     deployUrl: string | null;
     scores: {
-      completeness: number;
-      creativity: number;
-      technical: number;
-      presentation: number;
+      documentation: number;
+      implementation: number;
+      ux: number;
+      idea: number;
     };
     reasoning: {
-      completeness: string;
-      creativity: string;
-      technical: string;
-      presentation: string;
+      documentation: string;
+      implementation: string;
+      ux: string;
+      idea: string;
     };
     baseScore: number;
     bonusScore: number | null;
@@ -394,18 +397,20 @@ export const mockProjectReports: Record<
     email: "limny@example.com",
     repoUrl: "https://github.com/limny/doc-summarizer",
     deployUrl: "https://doc-summarizer.vercel.app",
-    scores: { completeness: 28, creativity: 23, technical: 22, presentation: 14 },
+    scores: { documentation: 30, implementation: 23, ux: 22, idea: 11 },
     reasoning: {
-      completeness: "문서 요약 핵심 기능이 완벽하게 구현되었으며 다양한 파일 형식을 지원합니다.",
-      creativity: "Claude API를 활용한 구조화된 요약 방식이 독창적이며 사용자 경험이 뛰어납니다.",
-      technical: "TypeScript와 Next.js를 능숙하게 사용하였고 API 에러 처리가 충실합니다.",
-      presentation: "README 문서화는 훌륭하나 아키텍처 다이어그램이 부재합니다.",
+      documentation:
+        "PRD.md, CLAUDE.md, 스프린트 계획 문서가 체계적으로 작성되어 있습니다. AI 컨텍스트 파일이 잘 정의되어 개발 과정이 투명하게 기록되어 있습니다.",
+      implementation:
+        "TypeScript와 Next.js를 능숙하게 사용하였고 Claude API 연동이 안정적입니다. API 에러 처리가 충실하며 코드 품질이 우수합니다.",
+      ux: "문서 요약 핵심 기능이 완벽하게 구현되었으며 다양한 파일 형식을 지원합니다. 사용자 경험이 직관적으로 설계되어 있습니다.",
+      idea: "Claude API를 활용한 구조화된 요약 서비스 아이디어가 명확하며 실용적입니다. 문서 처리 자동화라는 명확한 문제를 해결합니다.",
     },
-    baseScore: 87,
-    bonusScore: 5,
+    baseScore: 86,
+    bonusScore: 10,
     bonusReasoning:
-      "배포 URL 접근 가능. 데스크톱/모바일 레이아웃이 잘 구성되어 있으며 시각적 완성도가 높습니다.",
-    totalScore: 92,
+      "배포 URL 정상 접근 가능 (배포 가점 3점). 데스크톱/모바일 레이아웃이 잘 구성되어 있으며 색상 팔레트가 일관되고 시각적 완성도가 높습니다 (시각적 완성도 7점).",
+    totalScore: 96,
   },
   "sub-001": {
     submissionId: "sub-001",
@@ -413,21 +418,20 @@ export const mockProjectReports: Record<
     email: "kimcs@example.com",
     repoUrl: "https://github.com/kimcs/ai-hackathon-2026",
     deployUrl: "https://ai-hackathon.vercel.app",
-    scores: { completeness: 26, creativity: 22, technical: 20, presentation: 15 },
+    scores: { documentation: 32, implementation: 22, ux: 20, idea: 11 },
     reasoning: {
-      completeness:
-        "핵심 기능이 모두 구현되어 있으며 UI/UX 완성도가 높습니다. 에러 처리가 일부 미흡합니다.",
-      creativity:
-        "기존 서비스와 차별화된 AI 활용 방식이 인상적입니다. 사용자 맞춤형 추천 기능이 독창적입니다.",
-      technical:
-        "Next.js와 AI API를 효과적으로 결합했습니다. 코드 구조가 깔끔하고 TypeScript를 잘 활용했습니다.",
-      presentation: "README가 잘 작성되어 있으나 데모 영상이 없어 아쉽습니다.",
+      documentation:
+        "PRD.md와 CLAUDE.md가 체계적으로 작성되어 있으며 AI 컨텍스트 파일이 잘 정의되어 있습니다. 진행 기록이 상세하게 남아 있어 우수합니다.",
+      implementation:
+        "Next.js와 AI API를 효과적으로 결합했습니다. 코드 구조가 깔끔하고 TypeScript를 잘 활용했습니다. 아키텍처 설계가 명확합니다.",
+      ux: "핵심 기능이 모두 구현되어 있으며 UI 완성도가 높습니다. 에러 처리가 일부 미흡하지만 전체적으로 동작 완성도가 우수합니다.",
+      idea: "AI를 활용한 사용자 맞춤형 서비스 아이디어가 명확합니다. 문제 정의가 구체적이나 차별성 측면에서 보완 여지가 있습니다.",
     },
-    baseScore: 83,
-    bonusScore: 5,
+    baseScore: 85,
+    bonusScore: 8,
     bonusReasoning:
-      "배포 URL 접근 가능. 전반적인 시각적 디자인이 깔끔하고 반응형 레이아웃이 잘 동작합니다.",
-    totalScore: 88,
+      "배포 URL 정상 접근 가능 (배포 가점 3점). 전반적인 시각적 디자인이 깔끔하고 반응형 레이아웃이 잘 동작합니다. 모바일 대응이 양호하나 타이포그래피 개선 여지 있음 (시각적 완성도 5점).",
+    totalScore: 93,
   },
   "sub-006": {
     submissionId: "sub-006",
@@ -435,16 +439,18 @@ export const mockProjectReports: Record<
     email: "kangji@example.com",
     repoUrl: "https://github.com/kangji/health-tracker",
     deployUrl: "https://health-tracker.netlify.app",
-    scores: { completeness: 22, creativity: 18, technical: 17, presentation: 13 },
+    scores: { documentation: 22, implementation: 17, ux: 18, idea: 9 },
     reasoning: {
-      completeness: "기본 기능은 동작하나 일부 엣지 케이스에서 오류가 발생합니다.",
-      creativity: "건강 추적 아이디어는 흔하지만 AI 분석 기능으로 차별화를 시도했습니다.",
-      technical: "코드 구조는 평균 수준이며 타입 안전성 개선 여지가 있습니다.",
-      presentation: "README 기본 작성, 기술 스택 설명은 충분합니다.",
+      documentation:
+        "README 기본 작성이 되어 있으나 PRD나 AI 컨텍스트 파일이 없습니다. 프로젝트 정의 문서가 부족합니다.",
+      implementation: "코드 구조는 평균 수준이며 타입 안전성 개선 여지가 있습니다. 기본적인 AI API 연동은 동작합니다.",
+      ux: "기본 기능은 동작하나 일부 엣지 케이스에서 오류가 발생합니다. 반응형 레이아웃은 구현되어 있습니다.",
+      idea: "건강 추적 아이디어는 흔하지만 AI 분석 기능으로 차별화를 시도했습니다. 문제 정의가 다소 모호합니다.",
     },
-    baseScore: 70,
+    baseScore: 66,
     bonusScore: 5,
-    bonusReasoning: "배포 URL 접근 가능. 레이아웃은 단순하지만 기능상 문제없이 동작합니다.",
-    totalScore: 75,
+    bonusReasoning:
+      "배포 URL 정상 접근 가능 (배포 가점 3점). 레이아웃은 단순하지만 기능상 문제없이 동작합니다. 시각적 완성도는 개선 여지가 있습니다 (시각적 완성도 2점).",
+    totalScore: 71,
   },
 };

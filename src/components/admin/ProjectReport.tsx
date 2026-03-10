@@ -11,16 +11,16 @@ interface ProjectReportData {
   repoUrl: string;
   deployUrl: string | null;
   scores: {
-    completeness: number;
-    creativity: number;
-    technical: number;
-    presentation: number;
+    documentation: number;
+    implementation: number;
+    ux: number;
+    idea: number;
   };
   reasoning: {
-    completeness: string;
-    creativity: string;
-    technical: string;
-    presentation: string;
+    documentation: string;
+    implementation: string;
+    ux: string;
+    idea: string;
   };
   baseScore: number;
   bonusScore: number | null;
@@ -29,10 +29,10 @@ interface ProjectReportData {
 }
 
 const criteriaLabels: Record<string, { label: string; max: number }> = {
-  completeness: { label: "완성도", max: 30 },
-  creativity: { label: "창의성", max: 25 },
-  technical: { label: "기술적 구현", max: 25 },
-  presentation: { label: "발표/문서화", max: 20 },
+  documentation: { label: "AI-Native 문서화 체계", max: 35 },
+  implementation: { label: "기술 구현력", max: 25 },
+  ux: { label: "완성도 및 UX", max: 25 },
+  idea: { label: "아이디어 및 활용 가치", max: 15 },
 };
 
 export function ProjectReport({ report }: { report: ProjectReportData }) {
@@ -48,7 +48,7 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-zinc-900">{report.totalScore}</div>
-              <div className="text-xs text-zinc-400">총점 (100점 만점)</div>
+              <div className="text-xs text-zinc-400">총점 (보너스 포함 시 110점 만점)</div>
             </div>
           </div>
         </CardHeader>

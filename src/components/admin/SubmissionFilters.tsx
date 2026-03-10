@@ -11,6 +11,7 @@ type FilterStatus = "all" | SubmissionStatus;
 interface StatusCount {
   all: number;
   submitted: number;
+  collecting: number;
   evaluating: number;
   done: number;
   error: number;
@@ -27,6 +28,7 @@ interface SubmissionFiltersProps {
 const tabItems: Array<{ value: FilterStatus; label: string }> = [
   { value: "all", label: "전체" },
   { value: "submitted", label: "제출완료" },
+  { value: "collecting", label: "수집중" },
   { value: "evaluating", label: "평가중" },
   { value: "done", label: "평가완료" },
   { value: "error", label: "오류" },

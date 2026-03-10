@@ -42,6 +42,7 @@ export function SubmissionTable({ submissions: initialSubmissions }: SubmissionT
     return {
       all: submissions.length,
       submitted: submissions.filter((s) => s.status === "submitted").length,
+      collecting: submissions.filter((s) => s.status === "collecting").length,
       evaluating: submissions.filter((s) => s.status === "evaluating").length,
       done: submissions.filter((s) => s.status === "done").length,
       error: submissions.filter((s) => s.status === "error").length,

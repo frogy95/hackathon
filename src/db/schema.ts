@@ -14,7 +14,7 @@ export const evaluationSessions = sqliteTable("evaluation_sessions", {
 });
 
 // 제출 상태 enum
-export type SubmissionStatus = "submitted" | "evaluating" | "done" | "error";
+export type SubmissionStatus = "submitted" | "collecting" | "evaluating" | "done" | "error";
 
 // 참가자 제출
 export const submissions = sqliteTable("submissions", {

@@ -19,12 +19,15 @@ async function seed() {
     submissionDeadline: "2026-03-20T18:00:00+09:00",
     criteriaConfig: JSON.stringify({
       criteria: [
-        { key: "completeness", label: "완성도", maxScore: 30 },
-        { key: "creativity", label: "창의성", maxScore: 25 },
-        { key: "technical", label: "기술적 구현", maxScore: 25 },
-        { key: "presentation", label: "발표/문서화", maxScore: 20 },
+        { key: "documentation", label: "AI-Native 문서화 체계", maxScore: 35 },
+        { key: "implementation", label: "기술 구현력", maxScore: 25 },
+        { key: "ux", label: "완성도 및 UX", maxScore: 25 },
+        { key: "idea", label: "아이디어 및 활용 가치", maxScore: 15 },
       ],
-      bonus: [{ key: "deployment", label: "배포 보너스", maxScore: 5 }],
+      bonus: [
+        { key: "deploy_exists", label: "배포 가점", maxScore: 3 },
+        { key: "visual_quality", label: "시각적 완성도", maxScore: 7 },
+      ],
     }),
     resultsPublished: false,
   });
@@ -39,9 +42,9 @@ async function seed() {
       repoUrl: "https://github.com/kimcs/ai-hackathon-2026",
       deployUrl: "https://ai-hackathon.vercel.app",
       status: "done" as const,
-      totalScore: 88,
-      baseScore: 83,
-      bonusScore: 5,
+      totalScore: 93,
+      baseScore: 85,
+      bonusScore: 8,
     },
     {
       id: "sub-002",
@@ -135,37 +138,38 @@ async function seed() {
     {
       id: "score-001-1",
       submissionId: "sub-001",
-      criteriaKey: "completeness",
-      score: 26,
-      maxScore: 30,
+      criteriaKey: "documentation",
+      score: 32,
+      maxScore: 35,
       reasoning:
-        "핵심 기능이 모두 구현되어 있으며 UI/UX 완성도가 높습니다. 에러 처리가 일부 미흡하지만 전체적으로 완성도가 우수합니다.",
+        "PRD.md와 CLAUDE.md가 체계적으로 작성되어 있으며 AI 컨텍스트 파일이 잘 정의되어 있습니다. 진행 기록이 상세하게 남아 있어 우수합니다.",
     },
     {
       id: "score-001-2",
       submissionId: "sub-001",
-      criteriaKey: "creativity",
+      criteriaKey: "implementation",
       score: 22,
       maxScore: 25,
       reasoning:
-        "기존 서비스와 차별화된 AI 활용 방식이 인상적입니다. 사용자 맞춤형 추천 기능이 독창적입니다.",
+        "Next.js와 AI API를 효과적으로 결합했습니다. 코드 구조가 깔끔하고 TypeScript를 잘 활용했습니다. 아키텍처 설계가 명확합니다.",
     },
     {
       id: "score-001-3",
       submissionId: "sub-001",
-      criteriaKey: "technical",
+      criteriaKey: "ux",
       score: 20,
       maxScore: 25,
       reasoning:
-        "Next.js와 AI API를 효과적으로 결합했습니다. 코드 구조가 깔끔하고 TypeScript를 잘 활용했습니다.",
+        "핵심 기능이 모두 구현되어 있으며 UI 완성도가 높습니다. 에러 처리가 일부 미흡하지만 전체적으로 동작 완성도가 우수합니다.",
     },
     {
       id: "score-001-4",
       submissionId: "sub-001",
-      criteriaKey: "presentation",
-      score: 15,
-      maxScore: 20,
-      reasoning: "README가 잘 작성되어 있으나 데모 영상이 없어 아쉽습니다. 기술 스택 설명이 충분합니다.",
+      criteriaKey: "idea",
+      score: 11,
+      maxScore: 15,
+      reasoning:
+        "AI를 활용한 사용자 맞춤형 서비스 아이디어가 명확합니다. 문제 정의가 구체적이나 차별성 측면에서 보완 여지가 있습니다.",
     },
   ];
 

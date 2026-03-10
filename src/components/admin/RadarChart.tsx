@@ -11,19 +11,19 @@ import {
 
 interface RadarChartProps {
   scores: {
-    completeness: number;
-    creativity: number;
-    technical: number;
-    presentation: number;
+    documentation: number;
+    implementation: number;
+    ux: number;
+    idea: number;
   };
 }
 
 export function RadarChart({ scores }: RadarChartProps) {
   const data = [
-    { subject: "완성도", score: scores.completeness, fullMark: 30 },
-    { subject: "창의성", score: scores.creativity, fullMark: 25 },
-    { subject: "기술", score: scores.technical, fullMark: 25 },
-    { subject: "발표/문서화", score: scores.presentation, fullMark: 20 },
+    { subject: "문서화", score: scores.documentation, fullMark: 35 },
+    { subject: "구현력", score: scores.implementation, fullMark: 25 },
+    { subject: "완성도/UX", score: scores.ux, fullMark: 25 },
+    { subject: "아이디어", score: scores.idea, fullMark: 15 },
   ];
 
   // 0~100 정규화하여 시각화
