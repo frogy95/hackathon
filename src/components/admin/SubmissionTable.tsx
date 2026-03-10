@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Table,
@@ -38,6 +38,10 @@ interface SubmissionTableProps {
 export function SubmissionTable({ sessionId, submissions: initialSubmissions }: SubmissionTableProps) {
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
+
+  useEffect(() => {
+    setSubmissions(initialSubmissions);
+  }, [initialSubmissions]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 

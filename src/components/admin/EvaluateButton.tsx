@@ -158,9 +158,11 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
   const percentage = evalTotal > 0 ? Math.round((evalDone / evalTotal) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* 모델 선택 */}
-      <div className="flex items-center gap-2">
+    <div className="border rounded-lg p-4 bg-white">
+      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">AI 평가</p>
+
+      {/* 버튼 영역 */}
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={selectedModel}
           onChange={(e) => setSelectedModel(e.target.value as "haiku" | "sonnet")}
@@ -231,9 +233,9 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
         )}
       </div>
 
-      {/* 진행률 바 */}
+      {/* 진행률 바 (실행 중일 때만) */}
       {progress && (
-        <div className="w-full min-w-[200px]">
+        <div className="mt-3">
           <div className="flex justify-between text-xs text-zinc-500 mb-1">
             <span>
               {evalDone}/{evalTotal} 완료
