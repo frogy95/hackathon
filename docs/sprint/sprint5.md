@@ -3,7 +3,7 @@
 - **기간**: 2026-03-10 (1주)
 - **브랜치**: `sprint5` (master에서 분기)
 - **Phase**: Phase 3 — AI 평가 엔진 + 결과 대시보드 연결
-- **상태**: 계획 수립 완료, 구현 예정
+- **상태**: 구현 완료 (2026-03-10)
 
 ---
 
@@ -70,7 +70,7 @@ src/
 
 ## 작업 목록
 
-### T3-1. GitHub 저장소 데이터 수집 엔진 (복잡도: L) — ⬜ 예정
+### T3-1. GitHub 저장소 데이터 수집 엔진 (복잡도: L) — ✅ 완료
 
 **목표**: Octokit을 사용하여 제출된 GitHub public 저장소에서 평가에 필요한 데이터를 수집하고 `Submission.collectedData` (JSON)에 저장한다.
 
@@ -133,7 +133,7 @@ src/
 
 ---
 
-### T3-2. AI 평가 프롬프트 설계 및 구현 (복잡도: L) — ⬜ 예정
+### T3-2. AI 평가 프롬프트 설계 및 구현 (복잡도: L) — ✅ 완료
 
 **목표**: `@anthropic-ai/sdk`를 사용하여 수집된 저장소 데이터를 Claude에게 전달하고, PRD 평가 기준(4개 대항목 100점)에 따른 항목별 점수 + 근거를 생성하여 DB에 저장한다.
 
@@ -235,7 +235,7 @@ src/
 
 ---
 
-### T3-3. 일괄 평가 실행 + 진행률 표시 (복잡도: L) — ⬜ 예정
+### T3-3. 일괄 평가 실행 + 진행률 표시 (복잡도: L) — ✅ 완료
 
 **목표**: 관리자가 "평가 실행" 버튼을 클릭하면 세션 내 비제외 제출 전체에 대해 데이터 수집 → AI 평가를 병렬 3개 동시 실행하고, 프론트엔드에 진행률을 표시한다.
 
@@ -351,15 +351,15 @@ ANTHROPIC_API_KEY=sk-ant-your_key_here
 
 ## 완료 기준 (Definition of Done)
 
-- ⬜ `@octokit/rest`로 실제 public GitHub 저장소 데이터 수집 성공
-- ⬜ `@anthropic-ai/sdk`로 Claude API 호출하여 4개 대항목 점수 + 근거 생성
-- ⬜ 일괄 평가: 202 즉시 응답, 백그라운드 실행, 부분 실패 허용
-- ⬜ 진행률 폴링: DB 기반 `{ total, done, failed }` 2초 간격 갱신
-- ⬜ 프론트엔드 진행률 바 "0/N → N/N" 업데이트 후 완료 Toast
-- ⬜ 에러 건에 `status = "error"`, `adminNote` 저장
-- ⬜ 개별 재평가 API 동작
-- ⬜ `npm run build` 에러 없이 성공
-- ⬜ `ANTHROPIC_API_KEY`, `GITHUB_TOKEN` `.env.example`에 문서화
+- ✅ `@octokit/rest`로 실제 public GitHub 저장소 데이터 수집 성공
+- ✅ `@anthropic-ai/sdk`로 Claude API 호출하여 4개 대항목 점수 + 근거 생성
+- ✅ 일괄 평가: 202 즉시 응답, 백그라운드 실행, 부분 실패 허용
+- ✅ 진행률 폴링: DB 기반 `{ total, done, failed }` 2초 간격 갱신
+- ✅ 프론트엔드 진행률 바 "0/N → N/N" 업데이트 후 완료 Toast
+- ✅ 에러 건에 `status = "error"`, `adminNote` 저장
+- ✅ 개별 재평가 API 동작
+- ✅ `npm run build` 에러 없이 성공
+- ✅ `ANTHROPIC_API_KEY`, `GITHUB_TOKEN` `.env.example`에 문서화
 
 ---
 
@@ -367,9 +367,9 @@ ANTHROPIC_API_KEY=sk-ant-your_key_here
 
 | 태스크 | 상태 | 비고 |
 |--------|------|------|
-| T3-1. GitHub 데이터 수집 엔진 | ⬜ 예정 | `@octokit/rest` 설치 필요 |
-| T3-2. AI 평가 프롬프트 + 구현 | ⬜ 예정 | `@anthropic-ai/sdk` 설치 필요 |
-| T3-3. 일괄 평가 API + 진행률 UI | ⬜ 예정 | T3-1, T3-2 완료 후 |
+| T3-1. GitHub 데이터 수집 엔진 | ✅ 완료 | `@octokit/rest` 설치 완료 |
+| T3-2. AI 평가 프롬프트 + 구현 | ✅ 완료 | `@anthropic-ai/sdk` 설치 완료 |
+| T3-3. 일괄 평가 API + 진행률 UI | ✅ 완료 | DB 폴링 방식 채택, EvaluateButton 구현 완료 |
 
 ---
 
