@@ -182,21 +182,28 @@ function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
+// trailing comma 등 비표준 JSON 문법 제거
+function sanitizeJson(str: string): string {
+  return str
+    .replace(/,\s*]/g, "]")
+    .replace(/,\s*}/g, "}");
+}
+
 // JSON 추출 (마크다운 코드블록 처리 포함)
 function extractJson(text: string): EvaluationResult {
   // 순수 JSON 시도
   try {
-    return JSON.parse(text) as EvaluationResult;
+    return JSON.parse(sanitizeJson(text)) as EvaluationResult;
   } catch {
     // 마크다운 코드블록에서 추출 시도
     const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
     if (match) {
-      return JSON.parse(match[1]) as EvaluationResult;
+      return JSON.parse(sanitizeJson(match[1])) as EvaluationResult;
     }
     // 중괄호 블록 추출 시도
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]) as EvaluationResult;
+      return JSON.parse(sanitizeJson(jsonMatch[0])) as EvaluationResult;
     }
     throw new Error("AI 응답에서 JSON을 추출할 수 없습니다.");
   }

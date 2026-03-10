@@ -19,12 +19,15 @@ type EvalState = "idle" | "running" | "done" | "error";
 interface EvaluateButtonProps {
   sessionId: string;
   submissionCount: number;
+  doneCount?: number;
 }
 
-export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonProps) {
+export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: EvaluateButtonProps) {
   const [state, setState] = useState<EvalState>("idle");
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 평가 시작 시 서버에서 받은 실제 평가 대상 수 (done 제외)
+  const evalTotalRef = useRef<number>(0);
 
   // 폴링 중단
   const stopPolling = useCallback(() => {
@@ -46,8 +49,8 @@ export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonPro
       const data: ProgressData = json.data;
       setProgress(data);
 
-      // 완료 조건: done + failed >= total
-      if (data.total > 0 && data.done + data.failed >= data.total) {
+      // 완료 조건: 진행 중(inProgress) + 대기 중(pending)이 0이면 완료
+      if (evalTotalRef.current > 0 && data.inProgress === 0 && data.pending === 0) {
         stopPolling();
         setState("done");
 
@@ -59,6 +62,8 @@ export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonPro
         } else {
           toast.success(`평가 완료: ${data.done}건 모두 성공했습니다.`);
         }
+        // idle로 리셋하여 재클릭 가능하게
+        setState("idle");
         return;
       }
 
@@ -92,6 +97,7 @@ export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonPro
         return;
       }
 
+      evalTotalRef.current = json.data.total;
       toast.info(`평가를 시작했습니다. (총 ${json.data.total}건)`);
 
       // 초기 progress 설정
@@ -111,9 +117,12 @@ export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonPro
     }
   };
 
-  const percentage = progress && progress.total > 0
-    ? Math.round((progress.done / progress.total) * 100)
+  // 이번 실행의 완료 수 = evalTotal - 아직 처리 중 - 아직 대기 중
+  const evalTotal = evalTotalRef.current || 0;
+  const evalDone = evalTotal > 0 && progress
+    ? Math.max(0, evalTotal - progress.inProgress - progress.pending)
     : 0;
+  const percentage = evalTotal > 0 ? Math.round((evalDone / evalTotal) * 100) : 0;
 
   return (
     <div className="flex flex-col gap-2">
@@ -141,7 +150,7 @@ export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonPro
         ) : (
           <>
             <Play className="h-4 w-4 mr-1.5" />
-            평가 실행
+            {doneCount > 0 ? "재평가 실행" : "평가 실행"}
           </>
         )}
       </Button>
@@ -151,7 +160,7 @@ export function EvaluateButton({ sessionId, submissionCount }: EvaluateButtonPro
         <div className="w-full min-w-[200px]">
           <div className="flex justify-between text-xs text-zinc-500 mb-1">
             <span>
-              {progress.done}/{progress.total} 완료
+              {evalDone}/{evalTotal} 완료
               {progress.failed > 0 && (
                 <span className="text-red-500 ml-1">({progress.failed}건 실패)</span>
               )}

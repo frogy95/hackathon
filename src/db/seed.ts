@@ -70,7 +70,7 @@ async function seed() {
       email: "jsa@example.com",
       repoUrl: "https://github.com/jsa/data-visualizer",
       deployUrl: "https://data-viz.vercel.app",
-      status: "evaluating" as const,
+      status: "submitted" as const,
     },
     {
       id: "sub-005",

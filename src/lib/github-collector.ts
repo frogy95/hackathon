@@ -84,7 +84,16 @@ export async function collectGitHubData(repoUrl: string): Promise<CollectedData>
   const repoFullName = `${owner}/${repo}`;
 
   // 1. 저장소 존재 및 public 여부 확인
-  const repoInfo = await withRetry(() => octokit.repos.get({ owner, repo }));
+  let repoInfo;
+  try {
+    repoInfo = await withRetry(() => octokit.repos.get({ owner, repo }));
+  } catch (error: unknown) {
+    const err = error as { status?: number };
+    if (err.status === 404) {
+      throw new Error(`GitHub 저장소를 찾을 수 없습니다: ${repoFullName}. URL을 확인해주세요.`);
+    }
+    throw error;
+  }
   if (repoInfo.data.private) {
     throw new Error("비공개 저장소는 평가할 수 없습니다. public 저장소 URL을 입력해주세요.");
   }

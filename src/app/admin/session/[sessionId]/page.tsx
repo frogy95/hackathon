@@ -93,7 +93,11 @@ export default async function SessionDetailPage({ params }: Props) {
         {/* 액션 버튼 */}
         <div className="flex flex-wrap items-center gap-2">
           <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
-          <EvaluateButton sessionId={sessionId} submissionCount={subs.filter((s) => !s.excluded).length} />
+          <EvaluateButton
+            sessionId={sessionId}
+            submissionCount={subs.filter((s) => !s.excluded).length}
+            doneCount={subs.filter((s) => !s.excluded && s.status === "done").length}
+          />
           <Button size="sm" variant="secondary" disabled title="Phase 3에서 연결 예정">
             결과 공개
           </Button>

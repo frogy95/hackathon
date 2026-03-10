@@ -120,8 +120,8 @@ export async function runEvaluation(sessionId: string): Promise<void> {
       )
     );
 
-  // 이미 완료된 건은 건너뜀
-  const targets = pendingSubmissions.filter((s) => s.status !== "done");
+  // route에서 이미 submitted로 리셋했으므로 전체 대상
+  const targets = pendingSubmissions;
 
   if (targets.length === 0) {
     console.log(`[평가] 세션 ${sessionId}: 평가할 제출이 없습니다.`);

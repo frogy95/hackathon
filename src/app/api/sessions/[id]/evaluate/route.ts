@@ -30,25 +30,13 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
     .from(submissions)
     .where(and(eq(submissions.sessionId, id), eq(submissions.excluded, false)));
 
-  // 이미 진행 중인 평가 확인
-  const inProgressSubs = allSubs.filter(
-    (s) => s.status === "collecting" || s.status === "evaluating"
-  );
-  if (inProgressSubs.length > 0) {
-    return apiError(
-      "EVALUATION_IN_PROGRESS",
-      `현재 ${inProgressSubs.length}건이 평가 중입니다. 완료 후 재시도해주세요.`,
-      409
-    );
-  }
-
-  // 평가 대상 (done 제외)
-  const targets = allSubs.filter((s) => s.status !== "done");
+  // 평가 대상: 비제외 전체 (done 포함 — 전체 재평가 지원)
+  const targets = allSubs;
 
   if (targets.length === 0) {
     return apiError(
       "NO_PENDING_SUBMISSIONS",
-      "평가할 제출이 없습니다. 모든 제출이 이미 평가 완료 상태입니다.",
+      "평가할 제출이 없습니다.",
       400
     );
   }

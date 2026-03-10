@@ -35,14 +35,11 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
     return apiError(ErrorCode.NOT_FOUND.code, "제출을 찾을 수 없습니다.", ErrorCode.NOT_FOUND.status);
   }
 
-  // 이미 진행 중이면 거부
-  if (submission.status === "collecting" || submission.status === "evaluating") {
-    return apiError(
-      "EVALUATION_IN_PROGRESS",
-      "이미 평가가 진행 중입니다.",
-      409
-    );
-  }
+  // 상태 리셋 후 평가 시작 (stuck된 collecting/evaluating도 재평가 허용)
+  await db
+    .update(submissions)
+    .set({ status: "submitted", updatedAt: new Date().toISOString() })
+    .where(eq(submissions.id, subId));
 
   // 동기 실행 (완료까지 대기)
   try {
