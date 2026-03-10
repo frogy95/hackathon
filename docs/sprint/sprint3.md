@@ -325,16 +325,16 @@ src/
 
 ## 완료 기준 (Definition of Done)
 
-- ⬜ 참가자가 `/submit/[sessionId]`에서 실제 DB에 제출 데이터를 저장할 수 있다
-- ⬜ 참가자가 `/check/[sessionId]`에서 이름+이메일로 본인 제출 내역을 조회할 수 있다
-- ⬜ 관리자가 올바른 비밀번호로 로그인 시 JWT 쿠키가 발급되고 이후 API 호출에서 인증된다
-- ⬜ 관리자가 세션을 생성하고 대시보드에서 목록을 확인할 수 있다
-- ⬜ 관리자가 세션 마감일을 변경하거나 즉시 마감할 수 있다
-- ⬜ GitHub URL 입력 시 debounce 후 실시간 검증 결과가 표시된다
-- ⬜ 마감된 세션에 제출 시 400 에러와 안내 메시지가 표시된다
-- ⬜ `/submit`, `/check` 페이지에서 `mock-data.ts` import가 제거된다
-- ⬜ 모든 관리자 전용 API가 `withAdminAuth`로 보호된다
-- ⬜ `npm run build` 에러 없이 성공
+- ✅ 참가자가 `/submit/[sessionId]`에서 실제 DB에 제출 데이터를 저장할 수 있다
+- ✅ 참가자가 `/check/[sessionId]`에서 이름+이메일로 본인 제출 내역을 조회할 수 있다
+- ✅ 관리자가 올바른 비밀번호로 로그인 시 JWT 쿠키가 발급되고 이후 API 호출에서 인증된다
+- ✅ 관리자가 세션을 생성하고 대시보드에서 목록을 확인할 수 있다
+- ✅ 관리자가 세션 마감일을 변경하거나 즉시 마감할 수 있다
+- ✅ GitHub URL 입력 시 debounce 후 실시간 검증 결과가 표시된다
+- ✅ 마감된 세션에 제출 시 400 에러와 안내 메시지가 표시된다
+- ✅ `/submit`, `/check` 페이지에서 `mock-data.ts` import가 제거된다
+- ✅ 모든 관리자 전용 API가 `withAdminAuth`로 보호된다
+- ✅ `npm run build` 에러 없이 성공
 
 ---
 
