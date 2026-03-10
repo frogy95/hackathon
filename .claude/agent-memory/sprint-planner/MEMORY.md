@@ -6,7 +6,8 @@ AI-Native 해커톤 평가 시스템 (Next.js 15 + TypeScript + Tailwind + Drizz
 
 ## 스프린트 진행 현황
 - Sprint 1 (Phase 1): 프로젝트 초기화 + 참가자 UI — 완료 (2026-03-09)
-- Sprint 2 (Phase 1): 관리자 UI — 계획 수립 완료 (2026-03-10), 구현 예정
+- Sprint 2 (Phase 1): 관리자 UI — 완료 (2026-03-10)
+- Sprint 3 (Phase 2): API 구현 + 참가자 기능 연결 — 계획 수립 완료 (2026-03-10), 구현 예정
 
 ## 문서 저장 경로
 - 스프린트 계획: `docs/sprint/sprint{N}.md`
@@ -30,7 +31,8 @@ AI-Native 해커톤 평가 시스템 (Next.js 15 + TypeScript + Tailwind + Drizz
 - 세션 스토리지는 SSR 환경 불가 → 클라이언트 컴포넌트에서만 사용
 - Recharts는 'use client' 지시어 필수
 - 목업 데이터는 `src/lib/mock-data.ts`에 집중 관리
-- 하드코딩 관리자 비밀번호: `admin1234` (Phase 2에서 API 교체 예정)
+- 하드코딩 관리자 비밀번호: `admin1234` → Sprint 3에서 bcrypt + JWT 방식으로 교체 (환경 변수: ADMIN_PASSWORD_HASH, JWT_SECRET)
+- Sprint 3 신규 패키지: bcryptjs, jsonwebtoken, @octokit/rest, (옵션) use-debounce
 
 ## Phase별 목표
 - Phase 1 (Sprint 1-2): 프론트엔드 UI 쉘 — 목업 데이터로 전체 화면 구현
