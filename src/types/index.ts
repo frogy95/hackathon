@@ -40,6 +40,7 @@ export interface Submission {
   baseScore: number | null;
   jobRole: JobRole;
   checkPassword: string;
+  editCount: number;
 }
 
 export interface Score {

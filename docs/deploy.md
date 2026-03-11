@@ -1,3 +1,40 @@
+# Sprint 10 배포 체크리스트 — 오류 안내 개선 + 재평가 이메일 + 수정&재평가 제한
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `/api/sessions/[id]/submissions/[subId]/re-evaluate` 라우트 빌드 인식 확인
+- ✅ `src/db/schema.ts` — `editCount integer` 필드 추가 확인
+- ✅ `src/types/index.ts` — `Submission.editCount: number` 필드 추가 확인
+- ✅ `evaluateAndNotify` — 평가 에러 전파 + 이메일 try/catch 분리 확인
+- ✅ `runEvaluation` — `evaluateAndNotify` 호출로 이메일 통합 확인
+- ✅ `re-evaluate` 라우트 — `evaluateAndNotify` 호출로 이메일 발송 추가 확인
+- ✅ POST submissions — editCount 3회 제한 + UPDATE + 재평가 로직 확인
+- ✅ 참가자 UI — 수정&재평가 버튼 editCount 조건부 렌더링 확인
+- ✅ `POST /api/auth/admin` — 200 반환 확인
+- ✅ 오류 안내 문구 — "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다." 확인
+
+## 수동 실행 필요 항목
+
+### DB 스키마 적용 (editCount 필드 추가)
+
+```bash
+npx drizzle-kit push
+```
+
+- ✅ `src/db/schema.ts`에 `editCount integer` 필드 추가됨
+- ⬜ `npx drizzle-kit push` — 로컬/운영 DB에 컬럼 반영 (직접 실행 필요)
+
+### 수정&재평가 기능 검증 (`npm run dev` 실행 후)
+
+- ⬜ 동일 이메일로 재제출 시 "수정&재평가 요청 (1/3)" 버튼 표시 확인
+- ⬜ 3회 수정 후 재제출 → 403 오류 + "수정 횟수 제한(3회)을 초과했습니다." 응답 확인
+- ⬜ 참가자 UI에서 3회 초과 시 버튼 disabled 확인
+- ⬜ 재평가 완료 후 이메일 수신 확인 (RESEND_API_KEY 필요)
+- ⬜ error 상태 제출 조회 → "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다." 안내 문구 확인
+
+---
+
 # Sprint 9 배포 체크리스트 — 운영 준비
 
 ## 자동 검증 완료 (2026-03-11)

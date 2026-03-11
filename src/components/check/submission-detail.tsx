@@ -86,12 +86,20 @@ export function SubmissionDetail({
             )}
           </div>
 
-          {/* 마감 전이면 수정 링크 */}
+          {/* 마감 전이면 수정&재평가 요청 버튼 (최대 3회) */}
           {!isDeadlinePassed && (
             <div className="pt-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/submit/${sessionId}`}>수정하기</Link>
-              </Button>
+              {submission.editCount < 3 ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/submit/${sessionId}`}>
+                    수정&amp;재평가 요청 ({submission.editCount}/3)
+                  </Link>
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" disabled>
+                  수정&amp;재평가 요청 (3/3)
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
@@ -119,7 +127,7 @@ export function SubmissionDetail({
               : submission.status === "evaluating"
                 ? "현재 평가가 진행 중입니다. 잠시 후 다시 확인해주세요."
                 : submission.status === "error"
-                  ? "평가 중 오류가 발생했습니다. 관리자에게 문의해주세요."
+                  ? "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다."
                   : "평가가 아직 시작되지 않았습니다."}
           </CardContent>
         </Card>

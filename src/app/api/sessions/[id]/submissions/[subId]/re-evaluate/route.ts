@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { submissions, scores } from "@/db/schema";
 import { apiSuccess, apiError, ErrorCode, withAdminAuth } from "@/lib/api-utils";
-import { evaluateSingle } from "@/lib/evaluation-runner";
+import { evaluateAndNotify } from "@/lib/evaluation-runner";
 
 interface Context {
   params: Promise<{ id: string; subId: string }>;
@@ -51,7 +51,7 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
   }
 
   // 비동기 백그라운드 실행 (서버리스 환경에서 응답 후에도 실행 보장)
-  waitUntil(evaluateSingle(submissionId, model).catch((err) => {
+  waitUntil(evaluateAndNotify(submissionId, model).catch((err) => {
     console.error(`[재평가 오류] 제출 ${submissionId}:`, err);
   }));
 
