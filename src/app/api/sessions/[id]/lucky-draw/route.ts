@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { evaluationSessions, submissions, luckyDraws } from "@/db/schema";
 import { luckyDrawSchema } from "@/lib/validations";
+import { withAdminAuth, apiError } from "@/lib/api-utils";
 import type { LuckyDrawWinner } from "@/types";
 
 interface RouteParams {
@@ -26,7 +27,8 @@ function secureShuffleAndPick<T>(arr: T[], count: number): T[] {
 }
 
 // POST: 추첨 실행
-export async function POST(req: NextRequest, { params }: RouteParams) {
+export const POST = withAdminAuth(async (req: NextRequest, context: unknown) => {
+  const { params } = context as RouteParams;
   const { id: sessionId } = await params;
 
   // 세션 존재 확인
@@ -100,10 +102,11 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   });
 
   return NextResponse.json({ id: drawId, winners, candidateCount: candidates.length });
-}
+});
 
 // GET: 추첨 이력 조회
-export async function GET(_req: NextRequest, { params }: RouteParams) {
+export const GET = withAdminAuth(async (_req: NextRequest, context: unknown) => {
+  const { params } = context as RouteParams;
   const { id: sessionId } = await params;
 
   const draws = await db
@@ -121,4 +124,4 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
   }));
 
   return NextResponse.json(parsed);
-}
+});

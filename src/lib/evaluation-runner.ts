@@ -103,7 +103,7 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
     // Vision 보너스 평가 단계 (스크린샷 존재 시)
     if (screenshotResult) {
       console.log(`[Vision] ${submissionId}: 보너스 평가 시작`);
-      const bonusResult = await evaluateVisual(screenshotResult);
+      const bonusResult = await evaluateVisual(screenshotResult, model);
       result.bonus = bonusResult;
       result.bonus_score = bonusResult.totalBonus;
       result.total_score = result.base_score + bonusResult.totalBonus;
