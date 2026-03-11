@@ -162,11 +162,21 @@ function sanitizeJson(str: string): string {
 
 // JSON 문자열 값 내부의 이스케이프되지 않은 제어 문자 복구
 function repairJson(str: string): string {
-  let s = sanitizeJson(str);
-  // JSON 문자열 리터럴 내부의 raw 개행/탭 문자를 이스케이프 시퀀스로 변환
+  // BOM 제거
+  let s = str.startsWith("\uFEFF") ? str.slice(1) : str;
+  s = sanitizeJson(s);
+  // JSON 문자열 리터럴 내부의 raw 제어 문자 및 이스케이프되지 않은 백슬래시 처리
   s = s.replace(/"([^"\\]|\\.)*"/g, (match) => {
     return match
+      // 유효한 이스케이프 시퀀스는 건드리지 않고 나머지 처리
+      // 먼저 이스케이프되지 않은 백슬래시를 이중 백슬래시로 변환
+      // (유효한 이스케이프 시퀀스 \n \t \" \\ \/ \b \f \r \uXXXX 제외)
+      .replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
+      // raw 제어 문자 처리
       .replace(/(?<!\\)\t/g, "\\t")
+      .replace(/(?<!\\)\f/g, "\\f")
+      .replace(/(?<!\\)\b/g, "\\b")
+      .replace(/\u0000/g, "\\u0000")
       .replace(/\r\n/g, "\\n")
       .replace(/(?<!\\)\r/g, "\\n")
       .replace(/(?<!\\)\n/g, "\\n");
@@ -202,7 +212,41 @@ function extractJson(text: string): EvaluationResult {
           return JSON.parse(repairJson(jsonMatch[0])) as EvaluationResult;
         }
       }
-      throw new Error("AI 응답에서 JSON을 추출할 수 없습니다.");
+      // 모든 시도 실패 — 디버그 정보 포함한 에러
+      console.error("[AI 평가] JSON 추출 실패. 전체 응답:\n", text);
+      throw new Error(
+        `AI 응답에서 JSON을 추출할 수 없습니다. 응답 앞부분: ${text.slice(0, 500)}`
+      );
+    }
+  }
+}
+
+// 파싱 후 구조 검증
+function validateEvaluationResult(result: unknown): asserts result is EvaluationResult {
+  if (typeof result !== "object" || result === null) {
+    throw new Error("평가 결과가 객체가 아닙니다.");
+  }
+  const r = result as Record<string, unknown>;
+  if (!Array.isArray(r.categories)) {
+    throw new Error("평가 결과에 categories 배열이 없습니다.");
+  }
+  for (let i = 0; i < (r.categories as unknown[]).length; i++) {
+    const cat = (r.categories as unknown[])[i] as Record<string, unknown>;
+    for (const field of ["key", "score", "max_score", "sub_items"] as const) {
+      if (!(field in cat)) {
+        throw new Error(`categories[${i}]에 '${field}' 필드가 없습니다.`);
+      }
+    }
+    if (!Array.isArray(cat.sub_items)) {
+      throw new Error(`categories[${i}].sub_items가 배열이 아닙니다.`);
+    }
+    for (let j = 0; j < (cat.sub_items as unknown[]).length; j++) {
+      const sub = (cat.sub_items as unknown[])[j] as Record<string, unknown>;
+      for (const field of ["key", "score", "max_score", "reasoning"] as const) {
+        if (!(field in sub)) {
+          throw new Error(`categories[${i}].sub_items[${j}]에 '${field}' 필드가 없습니다.`);
+        }
+      }
     }
   }
 }
@@ -247,7 +291,37 @@ export async function evaluateWithAI(
   });
 
   const responseText = message.content[0].type === "text" ? message.content[0].text : "";
-  const result = extractJson(responseText);
+
+  // JSON 추출 및 구조 검증 (실패 시 1회 재시도)
+  let result: EvaluationResult;
+  try {
+    const parsed = extractJson(responseText);
+    validateEvaluationResult(parsed);
+    result = parsed;
+  } catch (firstError) {
+    console.warn("[AI 평가] 1차 파싱 실패, 재시도합니다:", (firstError as Error).message);
+    const retryMessage = await anthropic.messages.create({
+      model: modelId,
+      max_tokens: 4096,
+      temperature: 0,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: `${userPrompt}\n\n---\n\n배포 URL 존재 여부: ${hasDeployUrl ? "있음" : "없음"}`,
+        },
+        { role: "assistant", content: responseText },
+        {
+          role: "user",
+          content: "위 응답이 유효한 JSON이 아닙니다. 순수 JSON만 다시 출력해주세요.",
+        },
+      ],
+    });
+    const retryText = retryMessage.content[0].type === "text" ? retryMessage.content[0].text : "";
+    const retryParsed = extractJson(retryText);
+    validateEvaluationResult(retryParsed);
+    result = retryParsed;
+  }
 
   // base_score 계산 검증 및 보정
   const calculatedBase = result.categories.reduce((sum: number, cat: CategoryResult) => sum + cat.score, 0);
