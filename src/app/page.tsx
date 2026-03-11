@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link";
 import { eq, sql } from "drizzle-orm";
 import { ArrowRight, CheckCircle, BarChart3, Clock, Calendar } from "lucide-react";
