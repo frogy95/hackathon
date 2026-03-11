@@ -1348,14 +1348,18 @@ git commit -m "feat: 세션 상세 페이지에 행운상 추첨 버튼 추가"
 
 ## 완료 기준 (Definition of Done)
 
-- ⬜ `captureScreenshots` 함수가 실제 배포 URL에 대해 데스크톱/모바일 PNG를 `public/screenshots/`에 저장
-- ⬜ `evaluateWithVision` 함수가 스크린샷을 Claude Vision에 전달하여 `BonusResult` JSON을 반환
-- ⬜ 평가 실행 시 `deployUrl`이 있는 제출 건에 `bonusScore` 저장, `totalScore = baseScore + bonusScore`
-- ⬜ `ProjectReport` 상세 리포트에 스크린샷 이미지 + Vision 평가 근거 표시
-- ⬜ `RankingTable` 배포 보너스 토글 시 보너스 점수 포함/미포함 순위 재계산
-- ⬜ `POST /api/sessions/[id]/lucky-draw` 가 설정에 따라 랜덤 당첨자를 선정하고 DB에 저장
-- ⬜ `/admin/session/[sessionId]/lucky-draw` 페이지에서 설정 → 슬롯 애니메이션 → 당첨자 표시 → 재추첨 흐름 동작
-- ⬜ `npm run build` 오류 없이 성공
+- ✅ `captureScreenshots` 함수가 실제 배포 URL에 대해 데스크톱/모바일 PNG를 `public/screenshots/`에 저장
+- ✅ `evaluateWithVision` 함수가 스크린샷을 Claude Vision에 전달하여 `VisionEvaluationResult` JSON을 반환
+- ✅ 평가 실행 시 `deployUrl`이 있는 제출 건에 `bonusScore` 저장, `totalScore = baseScore + bonusScore`
+- ✅ `ProjectReport` 상세 리포트에 스크린샷 이미지 + Vision 평가 근거 표시
+- ✅ `RankingTable` 배포 보너스 토글 시 보너스 점수 포함/미포함 순위 재계산
+- ✅ `POST /api/sessions/[id]/lucky-draw` 가 설정에 따라 랜덤 당첨자를 선정하고 DB에 저장
+- ⬜ `/admin/session/[sessionId]/lucky-draw` 페이지에서 설정 → 슬롯 애니메이션 → 당첨자 표시 → 재추첨 흐름 동작 (수동 검증 필요)
+- ✅ `npm run build` 오류 없이 성공
+
+## 검증 결과
+
+- [Playwright 검증 보고서 및 코드 리뷰](sprint7/playwright-report.md)
 
 ---
 

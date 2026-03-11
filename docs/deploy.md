@@ -1,3 +1,61 @@
+# Sprint 7 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `/api/sessions/[id]/lucky-draw` 라우트 빌드 인식 확인
+- ✅ `/admin/session/[sessionId]/lucky-draw` 페이지 — HTTP 200 반환 확인
+- ✅ `POST /api/sessions/.../lucky-draw` (인증 없이) — 401 반환 확인 (withAdminAuth 적용)
+- ✅ `GET /api/sessions/.../lucky-draw` (인증 없이) — 401 반환 확인
+- ✅ `POST /api/sessions/session-2026-spring/lucky-draw` (인증 후, targetRange:"all") — 200 + winners 배열 반환 확인
+- ✅ `POST /api/sessions/session-2026-spring/lucky-draw` (인증 후, targetRange:"done") — 200 + candidateCount:1 확인
+- ✅ `GET /api/sessions/session-2026-spring/lucky-draw` (인증 후) — 200 + 추첨 이력 배열 반환 확인
+- ✅ 존재하지 않는 세션 lucky-draw — 404 반환 확인
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 사전 준비 (DB 스키마 변경)
+
+```bash
+npx drizzle-kit push
+```
+
+`lucky_draws` 테이블이 추가됩니다. 기존 데이터는 유지됩니다.
+
+### 1. 세션 상세 페이지 행운상 추첨 버튼 확인
+
+`/admin/session/session-2026-spring`:
+
+- ⬜ "행운상 추첨" 버튼 (Gift 아이콘) 표시 확인
+- ⬜ 버튼 클릭 → `/admin/session/.../lucky-draw` 페이지 이동 확인
+
+### 2. 행운상 추첨 페이지 흐름
+
+`/admin/session/session-2026-spring/lucky-draw`:
+
+- ⬜ 추첨 설정 카드 표시 확인 (당첨 인원 +/- 버튼, 대상 범위 토글, 제외 목록)
+- ⬜ 당첨 인원 1명, 전체 참가자 선택 후 "추첨 시작" 클릭 → 슬롯머신 애니메이션 확인
+- ⬜ 1.5초 후 당첨자 이름이 초록색으로 표시되는지 확인
+- ⬜ "재추첨" 버튼 클릭 → 설정 화면으로 복귀 확인
+- ⬜ 전체화면 버튼 → 전체화면 모드 전환 확인
+
+### 3. 배포 보너스 (ANTHROPIC_API_KEY + Playwright 필요)
+
+```bash
+# Playwright chromium 설치 (최초 1회)
+npx playwright install chromium
+```
+
+- ⬜ deployUrl이 있는 제출 건 AI 평가 실행 → `public/screenshots/{id}-desktop.png`, `{id}-mobile.png` 파일 생성 확인
+- ⬜ 결과 상세 리포트(`/admin/session/.../results/...`)에서 스크린샷 이미지 표시 확인
+- ⬜ Vision 평가 근거 텍스트 표시 확인
+- ⬜ 순위표에서 배포 보너스 포함 시 총점 최대 110점으로 표시 확인
+- ⬜ 배포 보너스 포함/미포함 토글 시 총점 변동 확인
+
+---
+
 # Sprint 6 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-11)
