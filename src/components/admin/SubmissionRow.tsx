@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { ExternalLink, Pencil, Check, Loader2 } from "lucide-react";
+import { ExternalLink, Pencil, Check, Loader2, RefreshCw, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import type { SubmissionStatus } from "@/types";
 
 interface SubmissionRowData {
@@ -18,7 +19,9 @@ interface SubmissionRowData {
   status: SubmissionStatus;
   excluded: boolean;
   adminNote: string | null;
+  errorMessage: string | null;
   jobRole?: string | null;
+  sessionId: string;
 }
 
 interface SubmissionRowProps {
@@ -40,6 +43,7 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
   const [noteValue, setNoteValue] = useState(submission.adminNote ?? "");
   const [excludeLoading, setExcludeLoading] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
+  const [reEvalLoading, setReEvalLoading] = useState(false);
 
   const { label, variant } = statusConfig[submission.status];
   const submittedAt = new Date(submission.submittedAt).toLocaleString("ko-KR", {
@@ -61,6 +65,28 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
     await onToggleExclude(submission.id);
     setExcludeLoading(false);
   };
+
+  const handleReEvaluate = async () => {
+    setReEvalLoading(true);
+    try {
+      const res = await fetch(
+        `/api/sessions/${submission.sessionId}/submissions/${submission.id}/re-evaluate`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        toast.error(json?.error?.message ?? "재평가 요청에 실패했습니다.");
+      } else {
+        toast.success("재평가를 시작했습니다.");
+      }
+    } catch {
+      toast.error("네트워크 오류가 발생했습니다.");
+    } finally {
+      setReEvalLoading(false);
+    }
+  };
+
+  const showReEvalButton = submission.status === "error" || submission.status === "done";
 
   return (
     <TableRow className={submission.excluded ? "bg-zinc-100 opacity-60" : ""}>
@@ -94,7 +120,14 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
       </TableCell>
       <TableCell className="text-xs text-zinc-500">{submittedAt}</TableCell>
       <TableCell>
-        <Badge variant={variant}>{label}</Badge>
+        <div className="flex items-center gap-1">
+          <Badge variant={variant}>{label}</Badge>
+          {submission.status === "error" && submission.errorMessage && (
+            <span title={submission.errorMessage} className="cursor-help flex-shrink-0">
+              <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+            </span>
+          )}
+        </div>
       </TableCell>
       <TableCell>
         {editingNote ? (
@@ -132,21 +165,39 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
         )}
       </TableCell>
       <TableCell>
-        <Button
-          size="sm"
-          variant={submission.excluded ? "outline" : "ghost"}
-          className="h-7 text-xs"
-          onClick={handleToggleExclude}
-          disabled={excludeLoading}
-        >
-          {excludeLoading ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : submission.excluded ? (
-            "복원"
-          ) : (
-            "제외"
+        <div className="flex items-center gap-1">
+          {showReEvalButton && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs text-zinc-500 hover:text-blue-600"
+              onClick={handleReEvaluate}
+              disabled={reEvalLoading}
+              title="재평가"
+            >
+              {reEvalLoading ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3 w-3" />
+              )}
+            </Button>
           )}
-        </Button>
+          <Button
+            size="sm"
+            variant={submission.excluded ? "outline" : "ghost"}
+            className="h-7 text-xs"
+            onClick={handleToggleExclude}
+            disabled={excludeLoading}
+          >
+            {excludeLoading ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : submission.excluded ? (
+              "복원"
+            ) : (
+              "제외"
+            )}
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );

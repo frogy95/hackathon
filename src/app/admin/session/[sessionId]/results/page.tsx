@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { RankingTable } from "@/components/admin/RankingTable";
 import { db } from "@/db";
 import { evaluationSessions, submissions, scores as scoresTable } from "@/db/schema";
+import { ROLE_CRITERIA } from "@/lib/role-criteria";
+import type { JobRole } from "@/types";
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -32,7 +34,7 @@ export default async function ResultsPage({ params }: Props) {
 
   // 각 제출의 항목별 점수 조회
   const rankings = await Promise.all(
-    doneSubs.map(async (sub, idx) => {
+    doneSubs.map(async (sub) => {
       const scoreRows = await db
         .select()
         .from(scoresTable)
@@ -43,27 +45,37 @@ export default async function ResultsPage({ params }: Props) {
         scoreMap[s.criteriaKey] = s.score;
       }
 
-      const entryScores = {
-        documentation: scoreMap["documentation"] ?? 0,
-        implementation: scoreMap["implementation"] ?? 0,
-        ux: scoreMap["ux"] ?? 0,
-        idea: scoreMap["idea"] ?? 0,
-      };
-
       return {
         submissionId: sub.id,
         name: sub.name,
         email: sub.email,
-        repoUrl: sub.repoUrl,
-        deployUrl: sub.deployUrl ?? null,
-        scores: entryScores,
+        jobRole: (sub.jobRole ?? "개발") as JobRole,
+        scores: scoreMap,
         baseScore: sub.baseScore ?? 0,
         bonusScore: sub.bonusScore ?? 0,
         totalScore: sub.totalScore ?? 0,
-        rank: idx + 1,
       };
     })
   );
+
+  // 동적 컬럼 구성: 단일 직군이면 해당 직군 기준, 혼합이면 공통 키 표시
+  const jobRoles = [...new Set(rankings.map((r) => r.jobRole))];
+  let columns: { key: string; label: string; max: number }[];
+
+  if (jobRoles.length === 1) {
+    // 단일 직군 — 해당 직군의 모든 기준 표시
+    const criteria = ROLE_CRITERIA[jobRoles[0]];
+    columns = criteria.map((c) => ({ key: c.key, label: c.name, max: c.maxScore }));
+  } else {
+    // 혼합 직군 — 공통 기준 키만 표시 (모든 직군에 존재하는 키)
+    const commonKeys = ["documentation", "implementation", "ux", "idea", "verification_plan"];
+    // 공통 기준의 label/max는 "개발" 직군 기준으로 표시
+    const devCriteria = ROLE_CRITERIA["개발"];
+    const devMap = Object.fromEntries(devCriteria.map((c) => [c.key, c]));
+    columns = commonKeys
+      .filter((k) => devMap[k])
+      .map((k) => ({ key: k, label: devMap[k].name, max: devMap[k].maxScore }));
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -82,7 +94,7 @@ export default async function ResultsPage({ params }: Props) {
         </p>
       </div>
 
-      <RankingTable rankings={rankings} sessionId={sessionId} />
+      <RankingTable rankings={rankings} sessionId={sessionId} columns={columns} />
     </div>
   );
 }

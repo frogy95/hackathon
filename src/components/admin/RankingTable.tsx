@@ -13,42 +13,43 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import type { JobRole } from "@/types";
 
-type SortKey = "documentation" | "implementation" | "ux" | "idea" | "total";
 type SortDir = "asc" | "desc";
 
 interface RankingEntry {
   submissionId: string;
   name: string;
   email: string;
-  scores: {
-    documentation: number;
-    implementation: number;
-    ux: number;
-    idea: number;
-  };
+  jobRole: JobRole;
+  scores: Record<string, number>;
   baseScore: number;
   bonusScore: number;
   totalScore: number;
 }
 
+interface ColumnDef {
+  key: string;
+  label: string;
+  max: number;
+}
+
 interface RankingTableProps {
   rankings: RankingEntry[];
   sessionId: string;
+  columns: ColumnDef[];
 }
 
-const columns: Array<{ key: SortKey; label: string; max: number }> = [
-  { key: "documentation", label: "문서화", max: 35 },
-  { key: "implementation", label: "구현력", max: 25 },
-  { key: "ux", label: "완성도/UX", max: 25 },
-  { key: "idea", label: "아이디어", max: 15 },
-  { key: "total", label: "총점", max: 110 },
-];
-
-export function RankingTable({ rankings, sessionId }: RankingTableProps) {
+export function RankingTable({ rankings, sessionId, columns }: RankingTableProps) {
   const [includeBonus, setIncludeBonus] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>("total");
+  const [sortKey, setSortKey] = useState<string>("total");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  // total 컬럼 포함한 전체 컬럼 목록
+  const allColumns: ColumnDef[] = [
+    ...columns,
+    { key: "total", label: "총점", max: 110 },
+  ];
 
   const sorted = useMemo(() => {
     return [...rankings]
@@ -57,15 +58,13 @@ export function RankingTable({ rankings, sessionId }: RankingTableProps) {
         displayTotal: includeBonus ? r.totalScore : r.baseScore,
       }))
       .sort((a, b) => {
-        const av =
-          sortKey === "total" ? a.displayTotal : a.scores[sortKey as keyof typeof a.scores];
-        const bv =
-          sortKey === "total" ? b.displayTotal : b.scores[sortKey as keyof typeof b.scores];
+        const av = sortKey === "total" ? a.displayTotal : (a.scores[sortKey] ?? 0);
+        const bv = sortKey === "total" ? b.displayTotal : (b.scores[sortKey] ?? 0);
         return sortDir === "desc" ? bv - av : av - bv;
       });
   }, [rankings, includeBonus, sortKey, sortDir]);
 
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: string) => {
     if (sortKey === key) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
@@ -92,7 +91,7 @@ export function RankingTable({ rankings, sessionId }: RankingTableProps) {
           <TableRow>
             <TableHead className="w-12">순위</TableHead>
             <TableHead>이름</TableHead>
-            {columns.map(({ key, label, max }) => (
+            {allColumns.map(({ key, label, max }) => (
               <TableHead
                 key={key}
                 className="cursor-pointer select-none hover:text-zinc-800 text-right"
@@ -128,10 +127,11 @@ export function RankingTable({ rankings, sessionId }: RankingTableProps) {
                   {entry.name}
                 </Link>
               </TableCell>
-              <TableCell className="text-right">{entry.scores.documentation}</TableCell>
-              <TableCell className="text-right">{entry.scores.implementation}</TableCell>
-              <TableCell className="text-right">{entry.scores.ux}</TableCell>
-              <TableCell className="text-right">{entry.scores.idea}</TableCell>
+              {columns.map(({ key }) => (
+                <TableCell key={key} className="text-right">
+                  {entry.scores[key] ?? 0}
+                </TableCell>
+              ))}
               <TableCell className="text-right font-semibold">{entry.displayTotal}</TableCell>
               {includeBonus && (
                 <TableCell className="text-right text-zinc-400 text-xs">
