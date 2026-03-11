@@ -1,3 +1,70 @@
+# Sprint 6 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ 신규 라우트 인식 확인: `/api/sessions/[id]/submissions/[subId]/re-evaluate`
+- ✅ 재평가 API 인증 없이 호출 — 401 반환 확인
+- ✅ 재평가 API 존재하지 않는 제출 (인증 후) — 404 NOT_FOUND 반환 확인
+- ✅ `GET /check?email=kimcs@example.com&checkPassword=1234` — 200 + criteriaConfig 포함 확인
+- ✅ `PATCH /api/sessions/session-2026-spring` `{"resultsPublished":true}` — 200 + `resultsPublished:true` 반환
+- ✅ 결과 공개 후 check API — scores 배열 포함 확인
+- ✅ 결과 비공개 후 check API — scores 빈 배열 반환 확인
+- ✅ 잘못된 checkPassword 조회 — 404 반환 확인
+- ✅ 결과 대시보드 페이지(`/admin/session/.../results`) — HTTP 200 반환 확인
+- ✅ 세션 상세 페이지(`/admin/session/...`) — HTTP 200 반환 확인
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 사전 준비 (DB 스키마 변경)
+
+```bash
+npx drizzle-kit push
+```
+
+`errorMessage` 컬럼이 추가됩니다. 기존 데이터는 유지됩니다.
+
+### 1. 결과 대시보드 순위표 직군별 컬럼 확인
+
+`/admin/session/session-2026-spring/results`:
+
+- ⬜ 평가 완료 건의 직군 기준 컬럼이 표시되는지 확인 (예: 개발 직군 → documentation/implementation/ux/idea/verification_plan)
+- ⬜ 컬럼 헤더 클릭 → 오름/내림차순 정렬 동작 확인
+- ⬜ 배포 보너스 토글 → 총점 변동 및 순위 변경 확인
+- ⬜ 이름 링크 클릭 → 상세 리포트 페이지 이동 확인
+
+### 2. 결과 공개 버튼 동작 확인
+
+`/admin/session/session-2026-spring`:
+
+- ⬜ "결과 공개" 버튼이 활성화 상태(disabled 아님)로 표시 확인
+- ⬜ 버튼 클릭 → Toast "결과를 공개했습니다." 표시 확인
+- ⬜ 버튼 텍스트 "결과 비공개"로 변경 확인 (EyeOff 아이콘)
+- ⬜ 페이지 새로고침 후 상태(공개/비공개) 유지 확인
+- ⬜ "결과 비공개" 클릭 → 다시 "결과 공개"로 토글 확인
+
+### 3. 재평가 버튼 확인 (error 상태 제출 건 필요)
+
+error 상태 제출이 없으면 평가 실행 후 ANTHROPIC_API_KEY 미설정 또는 잘못된 GitHub URL 제출을 만들어 확인합니다.
+
+- ⬜ `error` 상태 행에 재평가 아이콘 버튼 표시 확인
+- ⬜ 오류 메시지 있을 시 AlertCircle 아이콘 tooltip 표시 확인
+- ⬜ 재평가 버튼 클릭 → Toast "재평가를 시작했습니다." 표시 확인
+- ⬜ 상태가 "수집중" → "평가중" → "평가완료" 또는 "오류"로 변경 확인
+
+### 4. 참가자 결과 조회 확인
+
+`/check/session-2026-spring`:
+
+- ⬜ 이메일 + 조회 비밀번호 입력 후 조회 확인
+- ⬜ 결과 공개 전: "결과가 아직 공개되지 않았습니다." 메시지 표시 확인
+- ⬜ 관리자에서 결과 공개 활성화 후 재조회 → 항목별 점수 + 근거 표시 확인
+- ⬜ 직군별 평가 기준이 올바르게 표시되는지 확인
+
+---
+
 # Sprint 5.2 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-11)
