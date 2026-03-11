@@ -1,5 +1,6 @@
 // POST /api/sessions/[id]/evaluate — 일괄 평가 시작 (done 제외)
 import { NextRequest } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { eq, and, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
@@ -66,10 +67,10 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
       )
     );
 
-  // 비동기 백그라운드 실행 (응답을 기다리지 않음)
-  runEvaluation(id, model).catch((err) => {
+  // 비동기 백그라운드 실행 (서버리스 환경에서 응답 후에도 실행 보장)
+  waitUntil(runEvaluation(id, model).catch((err) => {
     console.error(`[평가 오류] 세션 ${id}:`, err);
-  });
+  }));
 
   return apiSuccess({ message: "평가를 시작했습니다.", total: targetIds.length }, 202);
 });

@@ -1,14 +1,10 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
 import * as schema from "./schema";
-import path from "path";
 
-const DB_PATH = process.env.DATABASE_URL ?? "./hackathon.db";
+const client = createClient({
+  url: process.env.DATABASE_URL ?? "file:./hackathon.db",
+  authToken: process.env.DATABASE_AUTH_TOKEN,
+});
 
-const sqlite = new Database(path.resolve(DB_PATH));
-
-// WAL 모드 활성화 (성능 향상)
-sqlite.pragma("journal_mode = WAL");
-
-export const db = drizzle(sqlite, { schema });
-export { sqlite };
+export const db = drizzle(client, { schema });

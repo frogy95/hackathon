@@ -1,5 +1,6 @@
 // POST /api/sessions/[id]/submissions/[subId]/re-evaluate — 단건 재평가
 import { NextRequest } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { submissions, scores } from "@/db/schema";
@@ -49,10 +50,10 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
     // body 없음 — 무시
   }
 
-  // 비동기 백그라운드 실행
-  evaluateSingle(submissionId, model).catch((err) => {
+  // 비동기 백그라운드 실행 (서버리스 환경에서 응답 후에도 실행 보장)
+  waitUntil(evaluateSingle(submissionId, model).catch((err) => {
     console.error(`[재평가 오류] 제출 ${submissionId}:`, err);
-  });
+  }));
 
   return apiSuccess({ message: "재평가를 시작했습니다." }, 202);
 });
