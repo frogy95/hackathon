@@ -1,3 +1,112 @@
+# Sprint 5.2 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `POST /api/sessions/session-2026-spring/submissions` (`jobRole:"QA"`, `checkPassword:"1234"`) — 201 반환, 응답에 jobRole, checkPassword 포함 확인
+- ✅ `GET .../submissions/check?email=testqa@example.com&checkPassword=1234` — 200 반환, jobRole 확인
+- ✅ 잘못된 checkPassword 조회 — 404 반환 확인
+- ✅ `jobRole` 누락 제출 — VALIDATION_ERROR 반환 확인
+- ✅ `checkPassword` 누락 제출 — VALIDATION_ERROR 반환 확인
+- ✅ `GET /api/sessions/.../submissions` (인증 없이) — 401 반환 확인
+- ✅ 제출 목록 API 응답에 `jobRole` 필드 포함 확인
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 사전 준비 (DB 스키마 변경)
+
+```bash
+npx drizzle-kit push
+npx tsx src/db/seed.ts
+```
+
+### 1. 제출 폼 직군 선택 + 조회 비밀번호 확인
+
+`/submit/session-2026-spring`:
+
+- ⬜ 직군 선택 드롭다운 표시 확인 (PM/기획, 디자인, 개발, QA)
+- ⬜ 직군 미선택 시 유효성 오류 메시지 표시
+- ⬜ 조회 비밀번호 필드(숫자 4자리) 표시 및 유효성 오류 확인
+- ⬜ 전체 필드 입력 후 제출 성공 확인
+
+### 2. 조회 페이지 이메일 + 조회비밀번호
+
+`/check/session-2026-spring`:
+
+- ⬜ 이름 필드 없이 이메일 + 조회 비밀번호만 표시 확인
+- ⬜ 올바른 이메일 + 비밀번호 → 제출 내역 표시 확인
+- ⬜ 잘못된 조회 비밀번호 → "찾을 수 없습니다" 메시지 확인
+
+### 3. 관리자 제출 목록 직군 컬럼
+
+`/admin/session/session-2026-spring`:
+
+- ⬜ 테이블에 "직군" 컬럼 표시 확인
+- ⬜ 시드 데이터 10건 직군이 올바르게 표시되는지 확인
+
+### 4. 결과 리포트 직군 표시 (평가 완료 건 필요)
+
+- ⬜ 직군 Badge 표시 확인
+- ⬜ 직군별 평가 항목 기준으로 점수 표시 확인
+- ⬜ 레이더 차트 축이 직군 기준으로 표시 확인
+
+### 5. AI 평가 직군별 루브릭 적용 (ANTHROPIC_API_KEY 필수)
+
+- ⬜ 디자인 직군 제출 평가 → `design_system` 항목 포함 확인
+- ⬜ QA 직군 제출 평가 → `verification_plan` 30점 기준 적용 확인
+
+---
+
+# Sprint 5.1 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-10)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음 (빌드 아티팩트 확인)
+- ✅ 신규 라우트 인식 확인: `/api/sessions/[id]/evaluate/reset`
+- ✅ 삭제된 라우트 확인: `/api/sessions/[id]/submissions/[subId]/re-evaluate` → 404 반환
+- ✅ `POST /api/sessions/{id}/evaluate` (인증 없이) — 401 반환 확인
+- ✅ `POST /api/sessions/{id}/evaluate/reset` (인증 없이) — 401 반환 확인
+- ✅ `POST /api/sessions/session-2026-spring/evaluate/reset` (인증 후) — `{"message":"평가가 리셋되었습니다.","count":1}` 정상 반환
+- ✅ 존재하지 않는 세션 `/evaluate/reset` — 404 NOT_FOUND 반환 확인
+- ✅ `POST /api/sessions/session-2026-spring/evaluate` (`model:"haiku"`) — `{"message":"평가를 시작했습니다.","total":1}` 정상 반환
+- ✅ `GET /api/sessions/session-2026-spring/evaluate/progress` (인증 후) — `{ total, done, failed, inProgress, pending }` 정상 반환
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 1. EvaluateButton 모델 선택 UI 확인
+
+세션 상세 페이지(`/admin/session/session-2026-spring`)에서:
+
+- ✅ "Haiku (빠름)" / "Sonnet (정밀)" 드롭다운이 평가 버튼 좌측에 표시되는지 확인
+- ✅ 평가 실행 중 드롭다운이 비활성화되는지 확인
+- ✅ 평가 완료 건이 있을 때 "평가 리셋" 버튼이 표시되는지 확인
+
+### 2. 평가 리셋 버튼 동작 확인
+
+- ✅ "평가 리셋" 버튼 클릭 → 브라우저 confirm 다이얼로그 표시 확인
+- ✅ 확인 클릭 → Toast "평가가 리셋되었습니다. (N건)" 표시 확인
+- ✅ 제출 목록 상태가 "제출완료"로 리셋되어 표시되는지 확인
+
+### 3. 모델 선택 후 평가 실행 확인 (ANTHROPIC_API_KEY 필수)
+
+- ✅ Sonnet 선택 후 평가 실행 → 평가 진행 확인
+- ✅ 진행률 바 표시 확인
+- ✅ 완료 Toast에 선택한 모델명 표시 확인
+
+### 4. ProjectReport 마크다운 렌더링 확인
+
+세션 결과 페이지(`/admin/session/session-2026-spring/results`)에서:
+
+- ✅ 평가 완료된 제출의 상세 리포트 접속
+- ✅ reasoning 텍스트에서 `### 항목명` 헤딩이 굵게 표시되는지 확인
+- ✅ 세부 평가 항목이 마크다운 형식으로 표시되는지 확인
+
+---
+
 # Sprint 5 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-10)

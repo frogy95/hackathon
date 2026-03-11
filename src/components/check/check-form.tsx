@@ -37,7 +37,7 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
     setNotFound(false);
     setResult(null);
 
-    const params = new URLSearchParams({ name: data.name, email: data.email });
+    const params = new URLSearchParams({ email: data.email, checkPassword: data.checkPassword });
     const res = await fetch(`/api/sessions/${sessionId}/submissions/check?${params}`);
 
     if (res.status === 404) {
@@ -64,17 +64,6 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
       {/* 조회 폼 */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
-          <Label htmlFor="name">이름</Label>
-          <Input
-            id="name"
-            placeholder="홍길동"
-            {...register("name")}
-            aria-invalid={!!errors.name}
-          />
-          {errors.name && <p className="text-xs text-red-600">{errors.name.message}</p>}
-        </div>
-
-        <div className="space-y-1.5">
           <Label htmlFor="email">이메일</Label>
           <Input
             id="email"
@@ -85,6 +74,22 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
           />
           {errors.email && (
             <p className="text-xs text-red-600">{errors.email.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="checkPassword">조회 비밀번호 <span className="text-zinc-400 text-xs">(숫자 4자리)</span></Label>
+          <Input
+            id="checkPassword"
+            type="text"
+            inputMode="numeric"
+            maxLength={4}
+            placeholder="0000"
+            {...register("checkPassword")}
+            aria-invalid={!!errors.checkPassword}
+          />
+          {errors.checkPassword && (
+            <p className="text-xs text-red-600">{errors.checkPassword.message}</p>
           )}
         </div>
 
@@ -102,7 +107,7 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
 
       {notFound && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center text-sm text-yellow-800">
-          제출 내역을 찾을 수 없습니다. 이름과 이메일을 다시 확인해주세요.
+          제출 내역을 찾을 수 없습니다. 이메일과 조회 비밀번호를 다시 확인해주세요.
         </div>
       )}
 

@@ -18,8 +18,8 @@
 
 | 항목 | 상태 |
 |------|------|
-| 전체 진행률 | 62.5% (Sprint 5/8 완료) |
-| 현재 Phase | Phase 3 진행 중 (Sprint 5 완료) |
+| 전체 진행률 | 68.75% (Sprint 5.2/8 완료) |
+| 현재 Phase | Phase 3 진행 중 (Sprint 5.2 완료) |
 | 다음 마일스톤 | Sprint 6 - 결과 대시보드 실데이터 연결 |
 | MVP 목표 | Phase 2 완료 시점 |
 
@@ -320,12 +320,33 @@ Phase 1의 프론트엔드 UI를 실제 API와 연결하여 참가자 제출 -> 
 
 ## Phase 3: AI 평가 엔진 + 결과 대시보드 연결 (Sprint 5-6, 2주)
 
-### 🔄 상태: 진행 중 (Sprint 5 완료 2026-03-10)
+### ✅ 상태: 진행 중 (Sprint 5 완료 2026-03-10 / Sprint 5.1 완료 2026-03-10 / Sprint 5.2 완료 2026-03-11)
 
 ### 목표
 GitHub 저장소 데이터 수집 및 Claude API 기반 자동 평가를 구현하고, 결과 대시보드를 실제 데이터로 연결한다.
 
 ### 작업 목록
+
+#### Sprint 5.2: 직군별 평가 체계 + 제출 필드 확장 (5.2주차) — ✅ 완료 (2026-03-11)
+
+- ✅ **T5.2-1. DB 스키마 확장**: `submissions` 테이블에 `jobRole`, `checkPassword` 컬럼 추가
+- ✅ **T5.2-2. 타입 + 유효성 검증**: `JobRole` 타입, `submissionSchema` jobRole/checkPassword 필드 추가; `checkFormSchema` email + checkPassword로 변경
+- ✅ **T5.2-3. 제출 폼 UI**: 직군 선택 드롭다운 및 조회 비밀번호 입력 필드 추가
+- ✅ **T5.2-4. 제출 API**: POST submissions에 `jobRole`, `checkPassword` 저장
+- ✅ **T5.2-5. 조회 페이지 + API**: 이름 필드 제거 → 이메일 + 조회비밀번호로 조회 방식 변경
+- ✅ **T5.2-6. AI 평가 엔진 직군별 기준**: `ROLE_CRITERIA` 상수 (PM/기획, 개발, 디자인, QA), `buildSystemPrompt(jobRole)` 동적 생성
+- ✅ **T5.2-7. 결과 표시 개선**: `RadarChart` 동적 축 지원, `ProjectReport` 직군별 기준 표시 + jobRole Badge
+- ✅ **T5.2-8. 관리자 SubmissionTable 직군 컬럼 추가**
+- ✅ **T5.2-9. 시드 데이터 업데이트**: 10건 모두 jobRole + checkPassword 추가
+
+#### Sprint 5.1: 평가 엔진 보완 및 UX 개선 (5.1주차) — ✅ 완료 (2026-03-10)
+
+- ✅ **T5.1-1. GitHub API 배치 순차 실행**: Promise.all → 순차 실행으로 동시 요청 수 제한
+- ✅ **T5.1-2. Dead Code 제거**: progressMap, getProgress 제거
+- ✅ **T5.1-3. 재평가 제거 + done 제외 필터**: re-evaluate API 삭제, done 건 평가 제외
+- ✅ **T5.1-4. 평가 리셋 API + UI**: POST /api/sessions/[id]/evaluate/reset 신규 구현
+- ✅ **T5.1-5. AI 평가 모델 선택**: haiku/sonnet 선택 UI + API 파라미터 전달
+- ✅ **T5.1-6. 마크다운 렌더링**: react-markdown + @tailwindcss/typography prose 클래스 적용
 
 #### Sprint 5: 데이터 수집 + AI 평가 (5주차) — ✅ 완료 (2026-03-10)
 

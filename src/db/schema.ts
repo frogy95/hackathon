@@ -36,6 +36,8 @@ export const submissions = sqliteTable("submissions", {
   totalScore: real("total_score"),
   baseScore: real("base_score"),
   bonusScore: real("bonus_score"),
+  jobRole: text("job_role").notNull().default("개발"), // "PM/기획" | "디자인" | "개발" | "QA"
+  checkPassword: text("check_password").notNull().default("0000"), // 숫자 4자리
 });
 
 // 항목별 점수

@@ -1,10 +1,11 @@
 "use client";
 
-// 평가 실행 버튼 + 진행률 바 컴포넌트
+// 평가 실행 버튼 + 모델 선택 + 평가 리셋 버튼 컴포넌트
 import { useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Play, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { Play, Loader2, CheckCircle, AlertCircle, RotateCcw } from "lucide-react";
 
 interface ProgressData {
   total: number;
@@ -23,11 +24,17 @@ interface EvaluateButtonProps {
 }
 
 export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: EvaluateButtonProps) {
+  const router = useRouter();
   const [state, setState] = useState<EvalState>("idle");
   const [progress, setProgress] = useState<ProgressData | null>(null);
+  const [selectedModel, setSelectedModel] = useState<"haiku" | "sonnet">("haiku");
+  const [resetLoading, setResetLoading] = useState(false);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // 평가 시작 시 서버에서 받은 실제 평가 대상 수 (done 제외)
   const evalTotalRef = useRef<number>(0);
+
+  // 미완료건 수 (평가 실행 대상)
+  const pendingCount = submissionCount - doneCount;
+  const allDone = submissionCount > 0 && pendingCount === 0;
 
   // 폴링 중단
   const stopPolling = useCallback(() => {
@@ -49,7 +56,6 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
       const data: ProgressData = json.data;
       setProgress(data);
 
-      // 완료 조건: 진행 중(inProgress) + 대기 중(pending)이 0이면 완료
       if (evalTotalRef.current > 0 && data.inProgress === 0 && data.pending === 0) {
         stopPolling();
         setState("done");
@@ -57,27 +63,26 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
         if (data.failed > 0) {
           toast.warning(
             `평가 완료: ${data.done}건 성공, ${data.failed}건 실패`,
-            { description: "실패한 항목은 개별 재평가 버튼을 사용하세요." }
+            { description: "실패한 항목은 평가 실행으로 재시도하세요." }
           );
         } else {
           toast.success(`평가 완료: ${data.done}건 모두 성공했습니다.`);
         }
-        // idle로 리셋하여 재클릭 가능하게
         setState("idle");
+        router.refresh();
         return;
       }
 
-      // 계속 폴링 (2초 간격)
       pollingRef.current = setTimeout(pollProgress, 2000);
     } catch {
       console.error("진행률 조회 실패");
       pollingRef.current = setTimeout(pollProgress, 2000);
     }
-  }, [sessionId, stopPolling]);
+  }, [sessionId, stopPolling, router]);
 
   // 평가 시작
   const handleEvaluate = async () => {
-    if (state === "running") return;
+    if (state === "running" || allDone) return;
 
     setState("running");
     setProgress(null);
@@ -85,7 +90,9 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
     try {
       const res = await fetch(`/api/sessions/${sessionId}/evaluate`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify({ model: selectedModel }),
       });
 
       const json = await res.json();
@@ -98,9 +105,8 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
       }
 
       evalTotalRef.current = json.data.total;
-      toast.info(`평가를 시작했습니다. (총 ${json.data.total}건)`);
+      toast.info(`평가를 시작했습니다. (총 ${json.data.total}건, 모델: ${selectedModel === "haiku" ? "Haiku" : "Sonnet"})`);
 
-      // 초기 progress 설정
       setProgress({
         total: json.data.total,
         done: 0,
@@ -109,7 +115,6 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
         pending: json.data.total,
       });
 
-      // 폴링 시작 (1초 후 첫 번째 폴링)
       pollingRef.current = setTimeout(pollProgress, 1000);
     } catch {
       toast.error("평가 요청 중 오류가 발생했습니다.");
@@ -117,7 +122,35 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
     }
   };
 
-  // 이번 실행의 완료 수 = evalTotal - 아직 처리 중 - 아직 대기 중
+  // 평가 리셋
+  const handleReset = async () => {
+    if (!confirm("모든 평가 결과를 초기화합니다. 계속하시겠습니까?")) return;
+
+    setResetLoading(true);
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/evaluate/reset`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const json = await res.json();
+
+      if (!res.ok) {
+        toast.error(json.error?.message ?? "평가 리셋에 실패했습니다.");
+        return;
+      }
+
+      toast.success(`평가가 리셋되었습니다. (${json.data.count}건)`);
+      setProgress(null);
+      setState("idle");
+      router.refresh();
+    } catch {
+      toast.error("평가 리셋 중 오류가 발생했습니다.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const evalTotal = evalTotalRef.current || 0;
   const evalDone = evalTotal > 0 && progress
     ? Math.max(0, evalTotal - progress.inProgress - progress.pending)
@@ -125,39 +158,84 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
   const percentage = evalTotal > 0 ? Math.round((evalDone / evalTotal) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-2">
-      <Button
-        size="sm"
-        onClick={handleEvaluate}
-        disabled={state === "running" || submissionCount === 0}
-        title={submissionCount === 0 ? "평가할 제출이 없습니다" : undefined}
-      >
-        {state === "running" ? (
-          <>
-            <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-            평가 중...
-          </>
-        ) : state === "done" ? (
-          <>
-            <CheckCircle className="h-4 w-4 mr-1.5" />
-            평가 완료
-          </>
-        ) : state === "error" ? (
-          <>
-            <AlertCircle className="h-4 w-4 mr-1.5" />
-            재시도
-          </>
-        ) : (
-          <>
-            <Play className="h-4 w-4 mr-1.5" />
-            {doneCount > 0 ? "재평가 실행" : "평가 실행"}
-          </>
-        )}
-      </Button>
+    <div className="border rounded-lg p-4 bg-white">
+      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">AI 평가</p>
 
-      {/* 진행률 바 */}
+      {/* 버튼 영역 */}
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={selectedModel}
+          onChange={(e) => setSelectedModel(e.target.value as "haiku" | "sonnet")}
+          disabled={state === "running"}
+          className="h-8 text-xs border border-zinc-200 rounded px-2 bg-white text-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-400"
+        >
+          <option value="haiku">Haiku (빠름)</option>
+          <option value="sonnet">Sonnet (정밀)</option>
+        </select>
+
+        <Button
+          size="sm"
+          onClick={handleEvaluate}
+          disabled={state === "running" || submissionCount === 0 || allDone}
+          title={
+            allDone
+              ? "모든 평가가 완료되었습니다"
+              : submissionCount === 0
+              ? "평가할 제출이 없습니다"
+              : undefined
+          }
+        >
+          {state === "running" ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+              평가 중...
+            </>
+          ) : state === "done" ? (
+            <>
+              <CheckCircle className="h-4 w-4 mr-1.5" />
+              평가 완료
+            </>
+          ) : state === "error" ? (
+            <>
+              <AlertCircle className="h-4 w-4 mr-1.5" />
+              재시도
+            </>
+          ) : allDone ? (
+            <>
+              <CheckCircle className="h-4 w-4 mr-1.5" />
+              모든 평가 완료
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4 mr-1.5" />
+              평가 실행 ({pendingCount}건)
+            </>
+          )}
+        </Button>
+
+        {/* 평가 리셋 버튼 (평가 완료 건이 있을 때만 표시) */}
+        {doneCount > 0 && state !== "running" && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            onClick={handleReset}
+            disabled={resetLoading}
+            title="모든 평가 결과 초기화"
+          >
+            {resetLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RotateCcw className="h-4 w-4" />
+            )}
+            평가 리셋
+          </Button>
+        )}
+      </div>
+
+      {/* 진행률 바 (실행 중일 때만) */}
       {progress && (
-        <div className="w-full min-w-[200px]">
+        <div className="mt-3">
           <div className="flex justify-between text-xs text-zinc-500 mb-1">
             <span>
               {evalDone}/{evalTotal} 완료
@@ -181,13 +259,6 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
             </p>
           )}
         </div>
-      )}
-
-      {/* 실패 안내 */}
-      {state === "done" && progress && progress.failed > 0 && (
-        <p className="text-xs text-amber-600">
-          {progress.failed}건 실패 — 제출 목록에서 개별 재평가하세요.
-        </p>
       )}
     </div>
   );

@@ -145,6 +145,40 @@ export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
         {errors.email && <p className="text-xs text-red-600">{errors.email.message}</p>}
       </div>
 
+      {/* 직군 선택 */}
+      <div className="space-y-1.5">
+        <Label htmlFor="jobRole">직군 *</Label>
+        <select
+          id="jobRole"
+          {...register("jobRole")}
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          defaultValue=""
+        >
+          <option value="" disabled>직군을 선택해주세요</option>
+          <option value="PM/기획">PM/기획</option>
+          <option value="디자인">디자인</option>
+          <option value="개발">개발</option>
+          <option value="QA">QA</option>
+        </select>
+        {errors.jobRole && <p className="text-xs text-red-600">{errors.jobRole.message}</p>}
+      </div>
+
+      {/* 조회 비밀번호 */}
+      <div className="space-y-1.5">
+        <Label htmlFor="checkPassword">조회 비밀번호 * <span className="text-zinc-400 text-xs">(숫자 4자리)</span></Label>
+        <Input
+          id="checkPassword"
+          type="text"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="0000"
+          {...register("checkPassword")}
+          aria-invalid={!!errors.checkPassword}
+        />
+        {errors.checkPassword && <p className="text-xs text-red-600">{errors.checkPassword.message}</p>}
+        <p className="text-xs text-zinc-400">결과 조회 시 사용할 비밀번호입니다.</p>
+      </div>
+
       {/* GitHub URL + 실시간 검증 */}
       <div className="space-y-1.5">
         <Label htmlFor="repoUrl">GitHub 저장소 URL *</Label>

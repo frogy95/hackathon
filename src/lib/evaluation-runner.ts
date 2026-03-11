@@ -1,17 +1,9 @@
-// 일괄 평가 오케스트레이터 (동시성 제한 + 진행률 추적)
+// 일괄 평가 오케스트레이터 (동시성 제한)
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { submissions } from "@/db/schema";
 import { collectGitHubData } from "./github-collector";
 import { evaluateWithAI, saveEvaluationResult } from "./ai-evaluator";
-
-// 인메모리 진행률 맵 (sessionId → 진행 상태)
-// 주의: 멀티 프로세스 환경에서는 DB 폴링으로 대체됨
-const progressMap = new Map<string, { total: number; done: number; failed: number }>();
-
-export function getProgress(sessionId: string) {
-  return progressMap.get(sessionId) ?? null;
-}
 
 // 동시성 제한 유틸리티
 async function withConcurrencyLimit<T>(
@@ -50,7 +42,7 @@ async function withConcurrencyLimit<T>(
 }
 
 // 단건 평가 (수집 → AI 평가 → DB 저장)
-export async function evaluateSingle(submissionId: string): Promise<void> {
+export async function evaluateSingle(submissionId: string, model?: string): Promise<void> {
   const submission = await db
     .select()
     .from(submissions)
@@ -87,7 +79,9 @@ export async function evaluateSingle(submissionId: string): Promise<void> {
       .where(eq(submissions.id, submissionId));
 
     const hasDeployUrl = !!submission.deployUrl;
-    const result = await evaluateWithAI(collectedData, hasDeployUrl);
+    // 직군 정보를 읽어 직군별 평가 기준 적용
+    const jobRole = (submission.jobRole ?? "개발") as import("@/types").JobRole;
+    const result = await evaluateWithAI(collectedData, hasDeployUrl, jobRole, model);
 
     await saveEvaluationResult(submissionId, result);
   } catch (error: unknown) {
@@ -107,9 +101,9 @@ export async function evaluateSingle(submissionId: string): Promise<void> {
   }
 }
 
-// 세션 전체 일괄 평가 실행
-export async function runEvaluation(sessionId: string): Promise<void> {
-  // 비제외 + 미완료 제출 목록 조회
+// 세션 전체 일괄 평가 실행 (done 제외)
+export async function runEvaluation(sessionId: string, model?: string): Promise<void> {
+  // 비제외 + done이 아닌 제출 목록 조회
   const pendingSubmissions = await db
     .select()
     .from(submissions)
@@ -120,32 +114,23 @@ export async function runEvaluation(sessionId: string): Promise<void> {
       )
     );
 
-  // route에서 이미 submitted로 리셋했으므로 전체 대상
-  const targets = pendingSubmissions;
+  const targets = pendingSubmissions.filter((s) => s.status !== "done");
 
   if (targets.length === 0) {
     console.log(`[평가] 세션 ${sessionId}: 평가할 제출이 없습니다.`);
     return;
   }
 
-  progressMap.set(sessionId, { total: targets.length, done: 0, failed: 0 });
-  console.log(`[평가] 세션 ${sessionId}: ${targets.length}건 평가 시작`);
+  console.log(`[평가] 세션 ${sessionId}: ${targets.length}건 평가 시작 (모델: ${model ?? "기본"})`);
 
   const tasks = targets.map((sub) => async () => {
-    try {
-      await evaluateSingle(sub.id);
-      const current = progressMap.get(sessionId)!;
-      progressMap.set(sessionId, { ...current, done: current.done + 1 });
-    } catch {
-      const current = progressMap.get(sessionId)!;
-      progressMap.set(sessionId, { ...current, failed: current.failed + 1 });
-      throw new Error(`제출 ${sub.id} 평가 실패`);
-    }
+    await evaluateSingle(sub.id, model);
   });
 
   // 동시성 3개 제한
-  await withConcurrencyLimit(tasks, 3);
+  const results = await withConcurrencyLimit(tasks, 3);
 
-  const final = progressMap.get(sessionId);
-  console.log(`[평가] 세션 ${sessionId} 완료: ${final?.done}성공 / ${final?.failed}실패`);
+  const failed = results.filter((r) => r.status === "rejected").length;
+  const succeeded = results.length - failed;
+  console.log(`[평가] 세션 ${sessionId} 완료: ${succeeded}성공 / ${failed}실패`);
 }

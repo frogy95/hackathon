@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import {
   Table,
@@ -28,6 +28,7 @@ interface SubmissionData {
   status: SubmissionStatus;
   excluded: boolean;
   adminNote: string | null;
+  jobRole?: string | null;
 }
 
 interface SubmissionTableProps {
@@ -38,6 +39,10 @@ interface SubmissionTableProps {
 export function SubmissionTable({ sessionId, submissions: initialSubmissions }: SubmissionTableProps) {
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
+
+  useEffect(() => {
+    setSubmissions(initialSubmissions);
+  }, [initialSubmissions]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -106,25 +111,6 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
     toast.success("메모가 저장되었습니다.");
   };
 
-  const reEvaluate = async (id: string) => {
-    const res = await fetch(`/api/sessions/${sessionId}/submissions/${id}/re-evaluate`, {
-      method: "POST",
-      credentials: "include",
-    });
-
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      toast.error(json.error?.message ?? "재평가 요청에 실패했습니다.");
-      return;
-    }
-
-    const json = await res.json();
-    setSubmissions((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, status: json.data.status, adminNote: json.data.adminNote } : s))
-    );
-    toast.success("재평가가 완료되었습니다.");
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
@@ -151,6 +137,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
         <TableHeader>
           <TableRow>
             <TableHead>이름</TableHead>
+            <TableHead>직군</TableHead>
             <TableHead>이메일</TableHead>
             <TableHead>GitHub</TableHead>
             <TableHead>배포 URL</TableHead>
@@ -175,7 +162,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
         <TableBody>
           {filtered.length === 0 ? (
             <TableRow>
-              <td colSpan={8} className="py-10 text-center text-sm text-zinc-400">
+              <td colSpan={9} className="py-10 text-center text-sm text-zinc-400">
                 검색 결과가 없습니다
               </td>
             </TableRow>
@@ -186,7 +173,6 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
                 submission={submission}
                 onToggleExclude={toggleExclude}
                 onUpdateNote={updateNote}
-                onReEvaluate={reEvaluate}
               />
             ))
           )}
