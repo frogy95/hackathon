@@ -1,3 +1,18 @@
+# Sprint 10 배포 체크리스트 — 오류 안내 개선 + 재평가 이메일 + 수정&재평가 제한
+
+## Sprint 10 수동 실행 필요 항목
+
+### DB 스키마 적용 (editCount 필드 추가)
+
+```bash
+npx drizzle-kit push
+```
+
+- ✅ `src/db/schema.ts`에 `editCount integer` 필드 추가됨
+- ⬜ `npx drizzle-kit push` — 로컬/운영 DB에 컬럼 반영 (직접 실행 필요)
+
+---
+
 # Sprint 9 배포 체크리스트 — 운영 준비
 
 ## 자동 검증 완료 (2026-03-11)

@@ -103,12 +103,13 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
   }
 }
 
-// 단건 평가 후 이메일 발송 (제출 시 자동 호출용)
+// 단건 평가 후 이메일 발송 (자동/재평가/일괄 평가 공통)
 export async function evaluateAndNotify(submissionId: string, model?: string): Promise<void> {
-  try {
-    await evaluateSingle(submissionId, model);
+  // 평가 에러는 호출자로 그대로 전파
+  await evaluateSingle(submissionId, model);
 
-    // 평가 완료 후 제출 정보 조회하여 이메일 발송
+  // 이메일 발송 (실패해도 평가 결과에 영향 없음)
+  try {
     const submission = await db
       .select()
       .from(submissions)
@@ -128,8 +129,7 @@ export async function evaluateAndNotify(submissionId: string, model?: string): P
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`[evaluateAndNotify 오류] ${submissionId}: ${message}`);
-    // 이메일 발송 실패는 평가 결과에 영향 없음 — 에러 재던지지 않음
+    console.error(`[이메일 발송 오류] ${submissionId}: ${message}`);
   }
 }
 
@@ -156,7 +156,7 @@ export async function runEvaluation(sessionId: string, model?: string): Promise<
   console.log(`[평가] 세션 ${sessionId}: ${targets.length}건 평가 시작 (모델: ${model ?? "기본"})`);
 
   const tasks = targets.map((sub) => async () => {
-    await evaluateSingle(sub.id, model);
+    await evaluateAndNotify(sub.id, model);
   });
 
   // 동시성 3개 제한

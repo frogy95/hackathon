@@ -39,6 +39,7 @@ export const submissions = sqliteTable("submissions", {
   jobRole: text("job_role").notNull().default("개발"), // "PM/기획" | "디자인" | "개발" | "QA"
   checkPassword: text("check_password").notNull().default("0000"), // 숫자 4자리
   errorMessage: text("error_message"), // 평가 오류 메시지 (nullable)
+  editCount: integer("edit_count").notNull().default(0), // 수정&재평가 요청 횟수
 });
 
 // 행운상 추첨 이력

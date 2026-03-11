@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { waitUntil } from "@vercel/functions";
 import { eq, and, like, or, asc, desc } from "drizzle-orm";
 import { db } from "@/db";
-import { evaluationSessions, submissions } from "@/db/schema";
+import { evaluationSessions, submissions, scores } from "@/db/schema";
 import { apiSuccess, apiError, ErrorCode, parseBody, withAdminAuth } from "@/lib/api-utils";
 import { submissionSchema } from "@/lib/validations";
 import { evaluateAndNotify } from "@/lib/evaluation-runner";
@@ -105,11 +105,37 @@ export async function POST(request: NextRequest, context: Context) {
     .then((r) => r[0]);
 
   if (existing) {
-    return apiError(
-      "DUPLICATE_SUBMISSION",
-      "이미 제출하셨습니다. 중복 제출은 허용되지 않습니다.",
-      409
-    );
+    // 수정 횟수 제한 확인 (최대 3회)
+    if ((existing.editCount ?? 0) >= 3) {
+      return apiError("EDIT_LIMIT_EXCEEDED", "수정 횟수 제한(3회)을 초과했습니다.", 403);
+    }
+
+    const now = new Date().toISOString();
+
+    // 기존 점수 삭제
+    await db.delete(scores).where(eq(scores.submissionId, existing.id));
+
+    // 제출 정보 업데이트
+    await db.update(submissions).set({
+      name, repoUrl, deployUrl: deployUrl ?? null, jobRole, checkPassword,
+      editCount: (existing.editCount ?? 0) + 1,
+      status: "submitted",
+      totalScore: null, baseScore: null, bonusScore: null,
+      errorMessage: null, collectedData: null,
+      updatedAt: now,
+    }).where(eq(submissions.id, existing.id));
+
+    // 재평가 + 이메일 발송 (백그라운드)
+    waitUntil(evaluateAndNotify(existing.id).catch((err) => {
+      console.error(`[수정 재평가 오류] 제출 ${existing.id}:`, err);
+    }));
+
+    const updated = await db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.id, existing.id))
+      .then((r) => r[0]);
+    return apiSuccess(updated, 200);
   }
 
   const now = new Date().toISOString();
