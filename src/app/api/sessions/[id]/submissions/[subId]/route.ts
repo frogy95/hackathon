@@ -67,5 +67,5 @@ export const DELETE = withAdminAuth(async (_request: NextRequest, context: unkno
   await db.delete(scores).where(eq(scores.submissionId, subId));
   await db.delete(submissions).where(eq(submissions.id, subId));
 
-  return new Response(null, { status: 204 });
+  return apiSuccess(null, 200);
 });
