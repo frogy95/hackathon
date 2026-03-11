@@ -28,6 +28,7 @@ interface SubmissionData {
   status: SubmissionStatus;
   excluded: boolean;
   adminNote: string | null;
+  jobRole?: string | null;
 }
 
 interface SubmissionTableProps {
@@ -136,6 +137,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
         <TableHeader>
           <TableRow>
             <TableHead>이름</TableHead>
+            <TableHead>직군</TableHead>
             <TableHead>이메일</TableHead>
             <TableHead>GitHub</TableHead>
             <TableHead>배포 URL</TableHead>
@@ -160,7 +162,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
         <TableBody>
           {filtered.length === 0 ? (
             <TableRow>
-              <td colSpan={8} className="py-10 text-center text-sm text-zinc-400">
+              <td colSpan={9} className="py-10 text-center text-sm text-zinc-400">
                 검색 결과가 없습니다
               </td>
             </TableRow>

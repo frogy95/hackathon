@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, context: Context) {
   const parsed = await parseBody(request, submissionSchema);
   if ("error" in parsed) return parsed.error;
 
-  const { name, email, repoUrl, deployUrl } = parsed.data;
+  const { name, email, repoUrl, deployUrl, jobRole, checkPassword } = parsed.data;
 
   // 동일 이메일 제출 확인 (upsert)
   const existing = await db
@@ -112,6 +112,8 @@ export async function POST(request: NextRequest, context: Context) {
         name,
         repoUrl,
         deployUrl: deployUrl ?? null,
+        jobRole,
+        checkPassword,
         updatedAt: now,
         status: "submitted",
       })
@@ -134,6 +136,8 @@ export async function POST(request: NextRequest, context: Context) {
       email,
       repoUrl,
       deployUrl: deployUrl ?? null,
+      jobRole,
+      checkPassword,
       submittedAt: now,
       updatedAt: now,
     });

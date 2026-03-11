@@ -639,6 +639,68 @@ curl -s -X POST http://localhost:3000/api/sessions/{SESSION_ID}/evaluate \
 
 ---
 
+---
+
+# Sprint 5.2: 직군별 평가 체계 + 제출 필드 확장
+
+- **기간**: 2026-03-11 (1일 스프린트)
+- **브랜치**: `sprint5.1` (sprint5.1 브랜치에서 계속 작업)
+- **Phase**: Phase 3 — AI 평가 엔진 직군별 확장
+- **상태**: ✅ 완료 (2026-03-11)
+
+## 목표
+
+참가자 직군(PM/기획, 개발, 디자인, QA)에 따라 차별화된 평가 기준을 적용하는 시스템을 구현한다. 제출 시 직군 선택과 조회 비밀번호를 입력하도록 필드를 확장하고, AI 평가 엔진이 직군별 루브릭으로 동적 프롬프트를 생성하도록 개선한다.
+
+## 구현 내용
+
+### DB 스키마 (`src/db/schema.ts`)
+- `submissions` 테이블에 `jobRole` (default: "개발"), `checkPassword` (default: "0000") 컬럼 추가
+- `npx drizzle-kit push` 완료
+
+### 타입 + 유효성 검증
+- `src/types/index.ts`: `JobRole` 타입 추가, `Submission` 인터페이스에 `jobRole`, `checkPassword` 추가
+- `src/lib/validations.ts`: `submissionSchema`에 `jobRole`(enum), `checkPassword`(4자리 숫자) 추가; `checkFormSchema`는 name 제거 → email + checkPassword
+
+### 제출 폼 UI
+- `src/components/submit/submission-form.tsx`: 직군 선택 드롭다운 및 조회 비밀번호 입력 필드 추가
+- `src/components/submit/submission-success.tsx`: jobRole, checkPassword 표시 추가
+
+### 제출 API
+- `src/app/api/sessions/[id]/submissions/route.ts` POST: `jobRole`, `checkPassword` 저장 (upsert 포함)
+
+### 조회 페이지 + API
+- `src/components/check/check-form.tsx`: 이름 필드 제거 → 이메일 + 조회비밀번호 조회
+- `src/app/api/sessions/[id]/submissions/check/route.ts`: 이름 대신 checkPassword 매칭으로 변경
+
+### AI 평가 엔진
+- `src/lib/ai-evaluator.ts`: `ROLE_CRITERIA` 상수(직군별 평가 기준 4종), `buildSystemPrompt(jobRole)` 동적 생성, `evaluateWithAI()`에 `jobRole` 파라미터 추가
+- `src/lib/evaluation-runner.ts`: `evaluateWithAI` 호출 시 `jobRole` 전달
+
+### 결과 표시
+- `src/components/admin/RadarChart.tsx`: `items` 배열 기반 동적 축 지원 (정적 축 제거)
+- `src/components/admin/ProjectReport.tsx`: 직군별 기준 라벨(ROLE_CRITERIA_LABELS), jobRole Badge 표시, reasoning 정규화 함수(normalizeReasoning) 추가
+- `src/components/admin/SubmissionTable.tsx` / `SubmissionRow.tsx`: "직군" 컬럼 추가
+
+### 시드 데이터
+- `src/db/seed.ts`: 10건 모두 `jobRole` (4개 직군 분배) + `checkPassword` 추가
+
+## 완료 기준 (Definition of Done)
+
+- ✅ DB 스키마 `jobRole`, `checkPassword` 컬럼 추가 및 `npx drizzle-kit push` 완료
+- ✅ 제출 폼에서 직군 선택 + 조회 비밀번호 입력 가능
+- ✅ 조회 페이지에서 이메일 + 조회비밀번호로 제출 조회 동작
+- ✅ AI 평가 시 직군별 루브릭 적용 (PM/기획, 개발, 디자인, QA)
+- ✅ 결과 리포트에서 직군 Badge 및 직군별 평가 기준 표시
+- ✅ `npm run build` 에러 없이 성공
+
+## 검증 결과
+
+- [검증 보고서 (Sprint 5.2)](sprint5.1/playwright-report-5.2.md)
+- [코드 리뷰 보고서 (Sprint 5.2)](sprint5.1/code-review-report-5.2.md)
+
+---
+
 ## 예상 산출물
 
 Sprint 5.1 완료 시:

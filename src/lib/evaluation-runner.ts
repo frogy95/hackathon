@@ -79,7 +79,9 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
       .where(eq(submissions.id, submissionId));
 
     const hasDeployUrl = !!submission.deployUrl;
-    const result = await evaluateWithAI(collectedData, hasDeployUrl, model);
+    // 직군 정보를 읽어 직군별 평가 기준 적용
+    const jobRole = (submission.jobRole ?? "개발") as import("@/types").JobRole;
+    const result = await evaluateWithAI(collectedData, hasDeployUrl, jobRole, model);
 
     await saveEvaluationResult(submissionId, result);
   } catch (error: unknown) {

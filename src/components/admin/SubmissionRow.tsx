@@ -18,6 +18,7 @@ interface SubmissionRowData {
   status: SubmissionStatus;
   excluded: boolean;
   adminNote: string | null;
+  jobRole?: string | null;
 }
 
 interface SubmissionRowProps {
@@ -64,6 +65,7 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
   return (
     <TableRow className={submission.excluded ? "bg-zinc-100 opacity-60" : ""}>
       <TableCell className="font-medium">{submission.name}</TableCell>
+      <TableCell className="text-zinc-500 text-xs">{submission.jobRole ?? "개발"}</TableCell>
       <TableCell className="text-zinc-500 text-xs">{submission.email}</TableCell>
       <TableCell>
         <a

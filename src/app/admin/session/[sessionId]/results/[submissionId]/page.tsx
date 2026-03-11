@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { ProjectReport } from "@/components/admin/ProjectReport";
 import { db } from "@/db";
 import { submissions, scores } from "@/db/schema";
+import type { JobRole } from "@/types";
 
 interface Props {
   params: Promise<{ sessionId: string; submissionId: string }>;
@@ -38,8 +39,9 @@ export default async function ProjectReportPage({ params }: Props) {
     email: sub.email,
     repoUrl: sub.repoUrl,
     deployUrl: sub.deployUrl ?? null,
-    scores: scoreMap as { documentation: number; implementation: number; ux: number; idea: number },
-    reasoning: reasoningMap as { documentation: string; implementation: string; ux: string; idea: string },
+    jobRole: (sub.jobRole ?? "개발") as JobRole,
+    scores: scoreMap,
+    reasoning: reasoningMap,
     baseScore: sub.baseScore ?? 0,
     bonusScore: sub.bonusScore ?? null,
     bonusReasoning: null,

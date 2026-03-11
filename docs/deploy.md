@@ -1,3 +1,64 @@
+# Sprint 5.2 배포 체크리스트
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `POST /api/sessions/session-2026-spring/submissions` (`jobRole:"QA"`, `checkPassword:"1234"`) — 201 반환, 응답에 jobRole, checkPassword 포함 확인
+- ✅ `GET .../submissions/check?email=testqa@example.com&checkPassword=1234` — 200 반환, jobRole 확인
+- ✅ 잘못된 checkPassword 조회 — 404 반환 확인
+- ✅ `jobRole` 누락 제출 — VALIDATION_ERROR 반환 확인
+- ✅ `checkPassword` 누락 제출 — VALIDATION_ERROR 반환 확인
+- ✅ `GET /api/sessions/.../submissions` (인증 없이) — 401 반환 확인
+- ✅ 제출 목록 API 응답에 `jobRole` 필드 포함 확인
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저에서 직접 확인하세요.
+
+### 사전 준비 (DB 스키마 변경)
+
+```bash
+npx drizzle-kit push
+npx tsx src/db/seed.ts
+```
+
+### 1. 제출 폼 직군 선택 + 조회 비밀번호 확인
+
+`/submit/session-2026-spring`:
+
+- ⬜ 직군 선택 드롭다운 표시 확인 (PM/기획, 디자인, 개발, QA)
+- ⬜ 직군 미선택 시 유효성 오류 메시지 표시
+- ⬜ 조회 비밀번호 필드(숫자 4자리) 표시 및 유효성 오류 확인
+- ⬜ 전체 필드 입력 후 제출 성공 확인
+
+### 2. 조회 페이지 이메일 + 조회비밀번호
+
+`/check/session-2026-spring`:
+
+- ⬜ 이름 필드 없이 이메일 + 조회 비밀번호만 표시 확인
+- ⬜ 올바른 이메일 + 비밀번호 → 제출 내역 표시 확인
+- ⬜ 잘못된 조회 비밀번호 → "찾을 수 없습니다" 메시지 확인
+
+### 3. 관리자 제출 목록 직군 컬럼
+
+`/admin/session/session-2026-spring`:
+
+- ⬜ 테이블에 "직군" 컬럼 표시 확인
+- ⬜ 시드 데이터 10건 직군이 올바르게 표시되는지 확인
+
+### 4. 결과 리포트 직군 표시 (평가 완료 건 필요)
+
+- ⬜ 직군 Badge 표시 확인
+- ⬜ 직군별 평가 항목 기준으로 점수 표시 확인
+- ⬜ 레이더 차트 축이 직군 기준으로 표시 확인
+
+### 5. AI 평가 직군별 루브릭 적용 (ANTHROPIC_API_KEY 필수)
+
+- ⬜ 디자인 직군 제출 평가 → `design_system` 항목 포함 확인
+- ⬜ QA 직군 제출 평가 → `verification_plan` 30점 기준 적용 확인
+
+---
+
 # Sprint 5.1 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-10)

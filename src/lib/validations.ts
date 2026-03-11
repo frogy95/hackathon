@@ -6,6 +6,10 @@ const githubUrlPattern = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]
 export const submissionSchema = z.object({
   name: z.string().min(2, "이름은 2자 이상이어야 합니다."),
   email: z.string().email("올바른 이메일 주소를 입력해주세요."),
+  jobRole: z.enum(["PM/기획", "디자인", "개발", "QA"] as const),
+  checkPassword: z
+    .string()
+    .regex(/^\d{4}$/, "조회 비밀번호는 숫자 4자리여야 합니다."),
   repoUrl: z
     .string()
     .min(1, "GitHub URL을 입력해주세요.")
@@ -23,8 +27,10 @@ export type SubmissionFormData = z.infer<typeof submissionSchema>;
 
 // 조회 폼 검증
 export const checkFormSchema = z.object({
-  name: z.string().min(1, "이름을 입력해주세요."),
   email: z.string().email("올바른 이메일 주소를 입력해주세요."),
+  checkPassword: z
+    .string()
+    .regex(/^\d{4}$/, "조회 비밀번호는 숫자 4자리여야 합니다."),
 });
 
 export type CheckFormData = z.infer<typeof checkFormSchema>;

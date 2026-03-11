@@ -39,6 +39,12 @@ export function SubmissionSuccess({ data, sessionId, submittedAt }: SubmissionSu
             <span className="text-zinc-500 font-medium">이메일</span>
             <span className="col-span-2 text-zinc-900">{data.email}</span>
 
+            <span className="text-zinc-500 font-medium">직군</span>
+            <span className="col-span-2 text-zinc-900">{data.jobRole}</span>
+
+            <span className="text-zinc-500 font-medium">조회 비밀번호</span>
+            <span className="col-span-2 text-zinc-900">{data.checkPassword}</span>
+
             <span className="text-zinc-500 font-medium">GitHub URL</span>
             <span className="col-span-2 text-zinc-900 break-all">
               <a

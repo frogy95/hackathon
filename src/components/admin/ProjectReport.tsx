@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadarChart } from "./RadarChart";
 import { ExternalLink, Github } from "lucide-react";
+import type { JobRole } from "@/types";
 
 interface ProjectReportData {
   submissionId: string;
@@ -11,29 +12,46 @@ interface ProjectReportData {
   email: string;
   repoUrl: string;
   deployUrl: string | null;
-  scores: {
-    documentation: number;
-    implementation: number;
-    ux: number;
-    idea: number;
-  };
-  reasoning: {
-    documentation: string;
-    implementation: string;
-    ux: string;
-    idea: string;
-  };
+  jobRole: JobRole;
+  scores: Record<string, number>;
+  reasoning: Record<string, string>;
   baseScore: number;
   bonusScore: number | null;
   bonusReasoning: string | null;
   totalScore: number;
 }
 
-const criteriaLabels: Record<string, { label: string; max: number }> = {
-  documentation: { label: "AI-Native 문서화 체계", max: 35 },
-  implementation: { label: "기술 구현력", max: 25 },
-  ux: { label: "완성도 및 UX", max: 25 },
-  idea: { label: "아이디어 및 활용 가치", max: 15 },
+// 직군별 평가 기준 라벨 및 만점 정의
+const ROLE_CRITERIA_LABELS: Record<JobRole, Record<string, { label: string; max: number }>> = {
+  "PM/기획": {
+    documentation: { label: "AI-Native 문서화 체계", max: 40 },
+    implementation: { label: "기술 구현력", max: 10 },
+    ux: { label: "완성도 및 UX", max: 20 },
+    idea: { label: "아이디어 및 활용 가치", max: 20 },
+    verification_plan: { label: "검증 계획", max: 10 },
+  },
+  "개발": {
+    documentation: { label: "AI-Native 문서화 체계", max: 30 },
+    implementation: { label: "기술 구현력", max: 30 },
+    ux: { label: "완성도 및 UX", max: 15 },
+    idea: { label: "아이디어 및 활용 가치", max: 10 },
+    verification_plan: { label: "검증 계획", max: 15 },
+  },
+  "디자인": {
+    documentation: { label: "AI-Native 문서화 체계", max: 20 },
+    implementation: { label: "기술 구현력", max: 10 },
+    ux: { label: "완성도 및 UX", max: 20 },
+    idea: { label: "아이디어 및 활용 가치", max: 10 },
+    design_system: { label: "디자인 시스템", max: 30 },
+    verification_plan: { label: "검증 계획", max: 10 },
+  },
+  "QA": {
+    documentation: { label: "AI-Native 문서화 체계", max: 30 },
+    implementation: { label: "기술 구현력", max: 10 },
+    ux: { label: "완성도 및 UX", max: 20 },
+    idea: { label: "아이디어 및 활용 가치", max: 10 },
+    verification_plan: { label: "검증 계획", max: 30 },
+  },
 };
 
 // 기존 JSON 형식 reasoning을 마크다운으로 변환 (하위 호환)
@@ -61,6 +79,18 @@ function normalizeReasoning(text: string): string {
 }
 
 export function ProjectReport({ report }: { report: ProjectReportData }) {
+  const criteriaLabels = ROLE_CRITERIA_LABELS[report.jobRole] ?? ROLE_CRITERIA_LABELS["개발"];
+
+  // 레이더 차트용 데이터: DB에 있는 점수 키와 기준 라벨 매핑
+  const radarItems = Object.entries(criteriaLabels)
+    .filter(([key]) => report.scores[key] !== undefined)
+    .map(([key, { label, max }]) => ({
+      key,
+      label,
+      score: report.scores[key] ?? 0,
+      maxScore: max,
+    }));
+
   return (
     <div className="space-y-6">
       {/* 기본 정보 */}
@@ -70,10 +100,11 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
             <div>
               <CardTitle className="text-xl">{report.name}</CardTitle>
               <p className="text-sm text-zinc-500 mt-1">{report.email}</p>
+              <Badge variant="secondary" className="mt-2">{report.jobRole}</Badge>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-zinc-900">{report.totalScore}</div>
-              <div className="text-xs text-zinc-400">총점 (보너스 포함 시 110점 만점)</div>
+              <div className="text-xs text-zinc-400">총점 (최대 100점)</div>
             </div>
           </div>
         </CardHeader>
@@ -109,7 +140,7 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
             <CardTitle className="text-base">항목별 점수 시각화</CardTitle>
           </CardHeader>
           <CardContent>
-            <RadarChart scores={report.scores} />
+            <RadarChart items={radarItems} />
           </CardContent>
         </Card>
 
@@ -118,16 +149,15 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
             <CardTitle className="text-base">점수 요약</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {Object.entries(report.scores).map(([key, score]) => {
-              const { label, max } = criteriaLabels[key];
-              const pct = Math.round((score / max) * 100);
+            {radarItems.map(({ key, label, score, maxScore }) => {
+              const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
               return (
                 <div key={key} className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-zinc-700">{label}</span>
                     <span className="font-medium">
                       {score}
-                      <span className="text-zinc-400 text-xs"> / {max}</span>
+                      <span className="text-zinc-400 text-xs"> / {maxScore}</span>
                     </span>
                   </div>
                   <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
@@ -156,8 +186,10 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
       {/* 항목별 평가 근거 */}
       <div className="space-y-4">
         {Object.entries(report.reasoning).map(([key, text]) => {
-          const { label, max } = criteriaLabels[key];
-          const score = report.scores[key as keyof typeof report.scores];
+          const meta = criteriaLabels[key];
+          if (!meta) return null;
+          const { label, max } = meta;
+          const score = report.scores[key] ?? 0;
           const mdText = normalizeReasoning(text);
           return (
             <Card key={key}>

@@ -2,6 +2,8 @@
 
 export type SubmissionStatus = "submitted" | "collecting" | "evaluating" | "done" | "error";
 
+export type JobRole = "PM/기획" | "디자인" | "개발" | "QA";
+
 export interface Session {
   id: string;
   name: string;
@@ -38,6 +40,8 @@ export interface Submission {
   totalScore: number | null;
   baseScore: number | null;
   bonusScore: number | null;
+  jobRole: JobRole;
+  checkPassword: string;
 }
 
 export interface Score {
