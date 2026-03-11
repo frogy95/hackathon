@@ -20,13 +20,14 @@ function buildSystemPrompt(jobRole: JobRole): string {
   }).join("\n\n");
 
   const categoriesJson = criteria.map((c) => {
+    const exampleScore = Math.floor(c.maxScore * 0.7);
     const subItemsJson = c.subItems.map(
-      (s) => `        { "key": "${s.key}", "name": "${s.name}", "score": <0-${s.maxScore}>, "max_score": ${s.maxScore}, "reasoning": "<구체적인 파일명과 내용을 인용한 근거>" }`
+      (s) => `        { "key": "${s.key}", "name": "${s.name}", "score": ${Math.floor(s.maxScore * 0.7)}, "max_score": ${s.maxScore}, "reasoning": "파일명: 한 줄 근거 요약" }`
     ).join(",\n");
     return `    {
       "key": "${c.key}",
       "name": "${c.name}",
-      "score": <number>,
+      "score": ${exampleScore},
       "max_score": ${c.maxScore},
       "sub_items": [
 ${subItemsJson}
@@ -47,21 +48,20 @@ ${rubricLines}
 반드시 아래 JSON 스키마만 출력하라. 마크다운 코드블록 없이 순수 JSON만 출력하라.
 
 {
-  "total_score": <number>,
-  "base_score": <number>,
-  "has_deploy_url": <boolean>,
+  "total_score": 72,
+  "base_score": 72,
+  "has_deploy_url": false,
   "categories": [
 ${categoriesJson}
   ],
-  "summary": "<3-5문장의 종합 평가 의견>"
+  "summary": "3-5문장의 종합 평가 의견"
 }
 
 주의사항:
 - total_score = base_score = 모든 categories의 score 합산 (최대 ${totalMax})
 - 각 category의 score = 해당 sub_items의 score 합산
-- reasoning에는 반드시 구체적인 파일명, 코드 내용, 커밋 메시지를 인용하라
-- 증거가 없으면 솔직하게 "해당 내용을 찾을 수 없음"으로 기재하라
-- reasoning 및 모든 문자열 필드에 코드나 특수문자를 포함할 때 JSON 문자열 규칙을 준수하라 (따옴표는 \\", 개행은 \\n, 백슬래시는 \\\\로 이스케이프)`;
+- reasoning은 "파일명: 한 줄 요약" 형식으로 간결하게 작성하라 (증거 없으면 "해당 내용 없음")
+- 모든 문자열 값에서 따옴표는 \\", 개행은 \\n, 백슬래시는 \\\\로 이스케이프하라`;
 }
 
 // CollectedData를 구조화된 텍스트로 변환
@@ -275,50 +275,59 @@ export async function evaluateWithAI(
   // 모델 선택: 별칭(haiku/sonnet) 또는 직접 모델 ID, 기본값 haiku
   const modelId = MODEL_MAP[model ?? "haiku"] ?? model ?? MODEL_MAP["haiku"];
 
+  const userContent = `${userPrompt}\n\n---\n\n배포 URL 존재 여부: ${hasDeployUrl ? "있음" : "없음"}`;
+
   const message = await anthropic.messages.create({
     model: modelId,
-    max_tokens: 4096,
+    max_tokens: 8192,
     temperature: 0,
     system: systemPrompt,
-    messages: [
-      {
-        role: "user",
-        content: `${userPrompt}\n\n---\n\n배포 URL 존재 여부: ${hasDeployUrl ? "있음" : "없음"}`,
-      },
-    ],
+    messages: [{ role: "user", content: userContent }],
   });
+
+  // stop_reason 체크: max_tokens이면 즉시 재시도 (파싱 시도 없이)
+  const stopReason = message.stop_reason;
+  if (stopReason === "max_tokens") {
+    console.warn("[AI 평가] 1차 응답이 max_tokens로 잘렸습니다. 간결 모드로 재시도합니다.");
+  }
 
   const responseText = message.content[0].type === "text" ? message.content[0].text : "";
 
-  // JSON 추출 및 구조 검증 (실패 시 1회 재시도)
-  let result: EvaluationResult;
-  try {
-    const parsed = extractJson(responseText);
-    validateEvaluationResult(parsed);
-    result = parsed;
-  } catch (firstError) {
-    console.warn("[AI 평가] 1차 파싱 실패, 재시도합니다:", (firstError as Error).message);
+  // JSON 추출 및 구조 검증 (max_tokens 잘림 또는 파싱 실패 시 1회 재시도)
+  async function doRetry(): Promise<EvaluationResult> {
     const retryMessage = await anthropic.messages.create({
       model: modelId,
-      max_tokens: 4096,
+      max_tokens: 8192,
       temperature: 0,
       system: systemPrompt,
       messages: [
         {
           role: "user",
-          content: `${userPrompt}\n\n---\n\n배포 URL 존재 여부: ${hasDeployUrl ? "있음" : "없음"}`,
-        },
-        { role: "assistant", content: responseText },
-        {
-          role: "user",
-          content: "위 응답이 유효한 JSON이 아닙니다. 순수 JSON만 다시 출력해주세요.",
+          content: `${userContent}\n\n추가 지시: reasoning은 각 항목당 2문장 이내로 간결하게 작성하라.`,
         },
       ],
     });
+    if (retryMessage.stop_reason === "max_tokens") {
+      console.warn("[AI 평가] 재시도 응답도 max_tokens로 잘렸습니다.");
+    }
     const retryText = retryMessage.content[0].type === "text" ? retryMessage.content[0].text : "";
     const retryParsed = extractJson(retryText);
     validateEvaluationResult(retryParsed);
-    result = retryParsed;
+    return retryParsed;
+  }
+
+  let result: EvaluationResult;
+  if (stopReason === "max_tokens") {
+    result = await doRetry();
+  } else {
+    try {
+      const parsed = extractJson(responseText);
+      validateEvaluationResult(parsed);
+      result = parsed;
+    } catch (firstError) {
+      console.warn("[AI 평가] 1차 파싱 실패, 재시도합니다:", (firstError as Error).message);
+      result = await doRetry();
+    }
   }
 
   // base_score 계산 검증 및 보정
