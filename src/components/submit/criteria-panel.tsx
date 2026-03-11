@@ -25,7 +25,7 @@ export function CriteriaPanel({ jobRole }: CriteriaPanelProps) {
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-zinc-900">{jobRole} 평가 기준</h2>
         <span className="text-xs text-zinc-500 bg-zinc-100 px-2 py-1 rounded-full">
-          기본 {totalMax}점 + 보너스 최대 10점
+          총 {totalMax}점
         </span>
       </div>
 
@@ -73,7 +73,7 @@ export function CriteriaPanel({ jobRole }: CriteriaPanelProps) {
       </div>
 
       <p className="text-xs text-zinc-400 text-center pt-1">
-        총 {totalMax}점 기준 + 배포 URL 제출 시 보너스 최대 10점
+        총 {totalMax}점 기준 · 예선통과자는 배포URL로 추가평가를 받게됩니다.
       </p>
     </div>
   );

@@ -76,6 +76,10 @@ export function SubmissionSuccess({ data, sessionId, submittedAt }: SubmissionSu
         </CardContent>
       </Card>
 
+      <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+        자동심사 후, 이메일로 평가내용을 받게됩니다.
+      </div>
+
       <Button asChild className="w-full">
         <Link href={`/check/${sessionId}`}>제출 확인 페이지로 이동</Link>
       </Button>

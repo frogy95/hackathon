@@ -4,7 +4,6 @@ import { ProjectReport } from "@/components/admin/ProjectReport";
 import { db } from "@/db";
 import { submissions, scores } from "@/db/schema";
 import type { JobRole } from "@/types";
-import type { ScreenshotResult } from "@/types/evaluation";
 
 interface Props {
   params: Promise<{ sessionId: string; submissionId: string }>;
@@ -26,26 +25,14 @@ export default async function ProjectReportPage({ params }: Props) {
     .from(scores)
     .where(eq(scores.submissionId, submissionId));
 
-  // 항목별 점수/근거 맵 구성
+  // 항목별 점수/근거 맵 구성 (deployment_bonus 제외)
   const scoreMap: Record<string, number> = {};
   const reasoningMap: Record<string, string> = {};
   for (const s of scoreRows) {
+    if (s.criteriaKey === "deployment_bonus") continue;
     scoreMap[s.criteriaKey] = s.score;
     reasoningMap[s.criteriaKey] = s.reasoning ?? "";
   }
-
-  // 스크린샷 데이터 파싱
-  let screenshotData: ScreenshotResult | null = null;
-  if (sub.screenshots) {
-    try {
-      screenshotData = JSON.parse(sub.screenshots) as ScreenshotResult;
-    } catch {
-      screenshotData = null;
-    }
-  }
-
-  // deployment_bonus reasoning을 bonusReasoning으로 추출
-  const bonusScoreRow = scoreRows.find((s) => s.criteriaKey === "deployment_bonus");
 
   const report = {
     submissionId: sub.id,
@@ -57,10 +44,7 @@ export default async function ProjectReportPage({ params }: Props) {
     scores: scoreMap,
     reasoning: reasoningMap,
     baseScore: sub.baseScore ?? 0,
-    bonusScore: sub.bonusScore ?? null,
-    bonusReasoning: bonusScoreRow?.reasoning ?? null,
     totalScore: sub.totalScore ?? 0,
-    screenshots: screenshotData,
   };
 
   return (

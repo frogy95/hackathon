@@ -52,7 +52,6 @@ export default async function ResultsPage({ params }: Props) {
         jobRole: (sub.jobRole ?? "개발") as JobRole,
         scores: scoreMap,
         baseScore: sub.baseScore ?? 0,
-        bonusScore: sub.bonusScore ?? 0,
         totalScore: sub.totalScore ?? 0,
       };
     })

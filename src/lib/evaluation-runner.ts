@@ -4,8 +4,7 @@ import { db } from "@/db";
 import { submissions } from "@/db/schema";
 import { collectGitHubData } from "./github-collector";
 import { evaluateWithAI, saveEvaluationResult } from "./ai-evaluator";
-import { captureScreenshots } from "./screenshot-capturer";
-import { evaluateVisual } from "./vision-evaluator";
+import { sendEvaluationResultEmail } from "./email-sender";
 
 // 동시성 제한 유틸리티
 async function withConcurrencyLimit<T>(
@@ -74,21 +73,6 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
       })
       .where(eq(submissions.id, submissionId));
 
-    // 스크린샷 캡처 단계 (deployUrl 있을 때만)
-    let screenshotResult = null;
-    if (submission.deployUrl) {
-      console.log(`[스크린샷] ${submissionId}: 캡처 시작 (${submission.deployUrl})`);
-      screenshotResult = await captureScreenshots(submissionId, submission.deployUrl);
-      await db
-        .update(submissions)
-        .set({
-          screenshots: JSON.stringify(screenshotResult),
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(submissions.id, submissionId));
-      console.log(`[스크린샷] ${submissionId}: 완료 (accessible=${screenshotResult.accessible})`);
-    }
-
     // AI 평가 단계
     await db
       .update(submissions)
@@ -99,16 +83,6 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
     // 직군 정보를 읽어 직군별 평가 기준 적용
     const jobRole = (submission.jobRole ?? "개발") as import("@/types").JobRole;
     const result = await evaluateWithAI(collectedData, hasDeployUrl, jobRole, model);
-
-    // Vision 보너스 평가 단계 (스크린샷 존재 시)
-    if (screenshotResult) {
-      console.log(`[Vision] ${submissionId}: 보너스 평가 시작`);
-      const bonusResult = await evaluateVisual(screenshotResult, model);
-      result.bonus = bonusResult;
-      result.bonus_score = bonusResult.totalBonus;
-      result.total_score = result.base_score + bonusResult.totalBonus;
-      console.log(`[Vision] ${submissionId}: 보너스 ${bonusResult.totalBonus}점`);
-    }
 
     await saveEvaluationResult(submissionId, result);
   } catch (error: unknown) {
@@ -126,6 +100,36 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
       .where(eq(submissions.id, submissionId));
 
     throw error;
+  }
+}
+
+// 단건 평가 후 이메일 발송 (제출 시 자동 호출용)
+export async function evaluateAndNotify(submissionId: string, model?: string): Promise<void> {
+  try {
+    await evaluateSingle(submissionId, model);
+
+    // 평가 완료 후 제출 정보 조회하여 이메일 발송
+    const submission = await db
+      .select()
+      .from(submissions)
+      .where(eq(submissions.id, submissionId))
+      .then((r) => r[0]);
+
+    if (submission && submission.status === "done") {
+      await sendEvaluationResultEmail({
+        to: submission.email,
+        name: submission.name,
+        totalScore: submission.totalScore ?? 0,
+        baseScore: submission.baseScore ?? 0,
+        jobRole: (submission.jobRole ?? "개발") as import("@/types").JobRole,
+        sessionId: submission.sessionId,
+        submittedAt: submission.submittedAt,
+      });
+    }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[evaluateAndNotify 오류] ${submissionId}: ${message}`);
+    // 이메일 발송 실패는 평가 결과에 영향 없음 — 에러 재던지지 않음
   }
 }
 

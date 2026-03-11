@@ -99,14 +99,10 @@ export function SubmissionDetail({
 
       {/* 평가 결과 */}
       {resultsPublished && submission.status === "done" && criteriaConfig &&
-        submission.totalScore !== null &&
-        submission.baseScore !== null &&
-        submission.bonusScore !== null ? (
+        submission.totalScore !== null ? (
         <ScoreResult
           scores={scores}
           totalScore={submission.totalScore}
-          baseScore={submission.baseScore}
-          bonusScore={submission.bonusScore}
           criteriaConfig={criteriaConfig}
         />
       ) : resultsPublished && submission.status === "done" ? (

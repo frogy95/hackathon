@@ -46,35 +46,10 @@ export interface CategoryResult {
   sub_items: SubItemResult[];
 }
 
-// 스크린샷 캡처 결과
-export interface ScreenshotResult {
-  desktop: string | null;   // "/screenshots/{id}-desktop.png"
-  mobile: string | null;
-  accessible: boolean;
-  errorReason?: string;
-  capturedAt: string;
-}
-
-// Vision 보너스 평가 결과
-export interface VisionEvaluationResult {
-  deploymentCredit: number;  // 0 or 3
-  visualScore: number;       // 0~7
-  totalBonus: number;        // 0~10
-  reasoning: string;
-  details: {
-    layout: number;
-    colorTypography: number;
-    visualHierarchy: number;
-    mobileResponsive: number;
-  };
-}
-
 export interface EvaluationResult {
   total_score: number;
   base_score: number;
-  bonus_score: number;
   has_deploy_url: boolean;
   categories: CategoryResult[];
-  bonus: VisionEvaluationResult | null;
   summary: string;
 }

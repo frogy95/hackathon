@@ -3,6 +3,9 @@
     "src/app/api/sessions/[id]/evaluate/route.ts": {
       "maxDuration": 300
     },
+    "src/app/api/sessions/[id]/submissions/route.ts": {
+      "maxDuration": 300
+    },
     "src/app/api/sessions/[id]/submissions/[subId]/re-evaluate/route.ts": {
       "maxDuration": 60
     }
