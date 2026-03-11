@@ -101,3 +101,37 @@ Sprint 6 구현은 계획 문서(sprint6.md)의 요구사항을 충실히 구현
 
 **Sprint 6 자동 검증: 통과 (11/11)**
 **코드 리뷰: Important 이슈 3건 (Phase 7에서 개선 권장), Critical 이슈 없음**
+
+---
+
+## AI 파싱 강화 추가 검증 (2026-03-11)
+
+`src/lib/ai-evaluator.ts` JSON 파싱 강화 관련 추가 검증:
+
+| 항목 | 기대값 | 실제값 | 결과 |
+|------|--------|--------|------|
+| `npm run build` (ai-evaluator 변경 후) | 빌드 성공 | 성공, TypeScript 오류 없음 | ✅ |
+| 재평가 API 미인증 호출 | 401 | 401 | ✅ |
+| check API 정상 동작 (변경 후) | 200 + success:true | 200 + success:true | ✅ |
+| 결과 공개 토글 | resultsPublished:true | resultsPublished:true | ✅ |
+| 결과 공개 후 check API scores 포함 | scores 배열에 데이터 포함 | 데이터 포함 확인 | ✅ |
+| 결과 비공개 복원 | resultsPublished:false | resultsPublished:false | ✅ |
+
+**AI 파싱 강화 추가 검증: 6/6 항목 통과**
+
+### AI 파싱 강화 코드 리뷰 결과
+
+**잘된 점:**
+- `repairJson()`의 BOM 제거 로직이 깔끔하게 첫 번째 처리로 위치
+- `validateEvaluationResult()`가 TypeScript asserts 타입가드로 구현되어 타입 안전성 확보
+- 재시도 시 이전 assistant 응답을 컨텍스트에 포함하는 방식이 Claude 대화 패턴에 적합
+- 이스케이프 패턴 처리 순서가 올바름 (이스케이프 안 된 백슬래시 먼저 → 제어 문자)
+
+**Important 이슈:**
+1. `repairJson()` 정규식이 이미 제어 문자를 포함한 문자열에서 매칭 실패 가능성 — 수정이 필요한 문자열을 찾지 못하는 순환 문제 엣지케이스
+2. 재시도도 실패할 경우 첫 번째 에러 컨텍스트가 소실됨 — 두 번째 에러만 전파되어 디버깅이 어려울 수 있음
+
+**Suggestion:**
+- `validateEvaluationResult`에서 `categories.length === 0` 빈 배열 체크 추가 고려
+
+**총 자동 검증: 17/17 항목 통과 (Sprint 6 기존 11 + 추가 6)**
