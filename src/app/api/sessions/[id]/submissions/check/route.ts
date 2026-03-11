@@ -3,6 +3,8 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
 import { evaluationSessions, submissions, scores } from "@/db/schema";
 import { apiSuccess, apiError, ErrorCode } from "@/lib/api-utils";
+import { ROLE_CRITERIA } from "@/lib/role-criteria";
+import type { JobRole } from "@/types";
 
 interface Context {
   params: Promise<{ id: string }>;
@@ -56,10 +58,22 @@ export async function GET(request: NextRequest, context: Context) {
       .where(eq(scores.submissionId, sub.id));
   }
 
+  // 직군별 criteriaConfig 구성
+  const jobRole = (sub.jobRole ?? "개발") as JobRole;
+  const roleCriteria = ROLE_CRITERIA[jobRole] ?? ROLE_CRITERIA["개발"];
+  const criteriaConfig = {
+    criteria: roleCriteria.map((c) => ({
+      key: c.key,
+      label: c.name,
+      maxScore: c.maxScore,
+    })),
+  };
+
   return apiSuccess({
     submission: sub,
     scores: scoreData,
     resultsPublished: session.resultsPublished,
     submissionDeadline: session.submissionDeadline,
+    criteriaConfig,
   });
 }

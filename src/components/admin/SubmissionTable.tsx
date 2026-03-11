@@ -29,6 +29,7 @@ interface SubmissionData {
   status: SubmissionStatus;
   excluded: boolean;
   adminNote: string | null;
+  errorMessage: string | null;
   jobRole?: string | null;
 }
 
@@ -173,7 +174,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
             filtered.map((submission) => (
               <SubmissionRow
                 key={submission.id}
-                submission={submission}
+                submission={{ ...submission, sessionId }}
                 onToggleExclude={toggleExclude}
                 onUpdateNote={updateNote}
               />

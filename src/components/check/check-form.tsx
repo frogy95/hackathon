@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmissionDetail } from "./submission-detail";
 import { checkFormSchema, type CheckFormData } from "@/lib/validations";
-import type { Submission, Score } from "@/types";
+import type { Submission, Score, CriteriaConfig } from "@/types";
 
 interface CheckFormProps {
   sessionId: string;
@@ -20,6 +20,7 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
   const [result, setResult] = useState<{
     submission: Submission;
     scores: Score[];
+    criteriaConfig: CriteriaConfig | null;
   } | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [apiError, setApiError] = useState<string>("");
@@ -54,6 +55,7 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
     setResult({
       submission: json.data.submission as Submission,
       scores: json.data.scores as Score[],
+      criteriaConfig: (json.data.criteriaConfig as CriteriaConfig) ?? null,
     });
   };
 
@@ -117,7 +119,7 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
           scores={result.scores}
           isDeadlinePassed={isDeadlinePassed}
           resultsPublished={resultsPublished}
-          criteriaConfig={null}
+          criteriaConfig={result.criteriaConfig}
           sessionId={sessionId}
         />
       )}

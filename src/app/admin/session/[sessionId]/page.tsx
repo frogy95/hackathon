@@ -10,6 +10,7 @@ import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
 import { ArrowLeft, BarChart2 } from "lucide-react";
 import { EvaluateButton } from "@/components/admin/EvaluateButton";
+import { PublishResultsButton } from "@/components/admin/PublishResultsButton";
 
 interface Props {
   params: Promise<{ sessionId: string }>;
@@ -35,6 +36,7 @@ export default async function SessionDetailPage({ params }: Props) {
   const subs = rawSubs.map((s) => ({
     ...s,
     status: s.status as SubmissionStatus,
+    errorMessage: s.errorMessage ?? null,
   }));
 
   const now = new Date();
@@ -93,9 +95,7 @@ export default async function SessionDetailPage({ params }: Props) {
         {/* 액션 버튼 */}
         <div className="flex flex-wrap items-center gap-2">
           <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
-          <Button size="sm" variant="secondary" disabled title="Phase 3에서 연결 예정">
-            결과 공개
-          </Button>
+          <PublishResultsButton sessionId={sessionId} resultsPublished={session.resultsPublished} />
           <Link href={`/admin/session/${sessionId}/results`}>
             <Button size="sm" variant="outline">
               <BarChart2 className="h-4 w-4 mr-1.5" />

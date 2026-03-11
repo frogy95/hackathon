@@ -92,6 +92,7 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
       .update(submissions)
       .set({
         status: "error",
+        errorMessage: message,
         adminNote: `평가 오류: ${message}`,
         updatedAt: new Date().toISOString(),
       })
