@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/db";
-import { submissions } from "@/db/schema";
+import { submissions, scores } from "@/db/schema";
 import { apiSuccess, apiError, ErrorCode, parseBody, withAdminAuth } from "@/lib/api-utils";
 import { updateSubmissionSchema } from "@/lib/validations";
 
@@ -46,4 +46,26 @@ export const PATCH = withAdminAuth(async (request: NextRequest, context: unknown
     .then((r) => r[0]);
 
   return apiSuccess(updated);
+});
+
+// DELETE /api/sessions/[id]/submissions/[subId] — 제출 영구 삭제
+export const DELETE = withAdminAuth(async (_request: NextRequest, context: unknown) => {
+  const { id: sessionId, subId } = await (context as Context).params;
+
+  // 해당 세션에 속하는 제출인지 확인
+  const submission = await db
+    .select()
+    .from(submissions)
+    .where(and(eq(submissions.id, subId), eq(submissions.sessionId, sessionId)))
+    .then((r) => r[0]);
+
+  if (!submission) {
+    return apiError(ErrorCode.NOT_FOUND.code, "제출을 찾을 수 없습니다.", ErrorCode.NOT_FOUND.status);
+  }
+
+  // FK 제약으로 scores 먼저 삭제
+  await db.delete(scores).where(eq(scores.submissionId, subId));
+  await db.delete(submissions).where(eq(submissions.id, subId));
+
+  return new Response(null, { status: 204 });
 });

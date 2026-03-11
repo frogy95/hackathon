@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { ExternalLink, Pencil, Check, Loader2, RefreshCw, AlertCircle } from "lucide-react";
+import { ExternalLink, Pencil, Check, Loader2, RefreshCw, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import type { SubmissionStatus } from "@/types";
 
@@ -28,6 +28,7 @@ interface SubmissionRowProps {
   submission: SubmissionRowData;
   onToggleExclude: (id: string) => Promise<void>;
   onUpdateNote: (id: string, note: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
 }
 
 const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondary" | "warning" | "success" | "destructive" }> = {
@@ -38,12 +39,13 @@ const statusConfig: Record<SubmissionStatus, { label: string; variant: "secondar
   error: { label: "오류", variant: "destructive" },
 };
 
-export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: SubmissionRowProps) {
+export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onDelete }: SubmissionRowProps) {
   const [editingNote, setEditingNote] = useState(false);
   const [noteValue, setNoteValue] = useState(submission.adminNote ?? "");
   const [excludeLoading, setExcludeLoading] = useState(false);
   const [noteLoading, setNoteLoading] = useState(false);
   const [reEvalLoading, setReEvalLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const { label, variant } = statusConfig[submission.status];
   const submittedAt = new Date(submission.submittedAt).toLocaleString("ko-KR", {
@@ -64,6 +66,13 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
     setExcludeLoading(true);
     await onToggleExclude(submission.id);
     setExcludeLoading(false);
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`"${submission.name}"의 제출을 영구 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+    setDeleteLoading(true);
+    await onDelete(submission.id);
+    setDeleteLoading(false);
   };
 
   const handleReEvaluate = async () => {
@@ -195,6 +204,20 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote }: Sub
               "복원"
             ) : (
               "제외"
+            )}
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-7 w-7 text-zinc-400 hover:text-red-600 hover:bg-red-50"
+            onClick={handleDelete}
+            disabled={deleteLoading}
+            title="영구 삭제"
+          >
+            {deleteLoading ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Trash2 className="h-3.5 w-3.5" />
             )}
           </Button>
         </div>

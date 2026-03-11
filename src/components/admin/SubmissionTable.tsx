@@ -97,6 +97,21 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
     router.refresh();
   };
 
+  const deleteSubmission = async (id: string) => {
+    const res = await fetch(`/api/sessions/${sessionId}/submissions/${id}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      toast.error("삭제에 실패했습니다.");
+      return;
+    }
+
+    setSubmissions((prev) => prev.filter((s) => s.id !== id));
+    toast.success("제출이 삭제되었습니다.");
+    router.refresh();
+  };
+
   const updateNote = async (id: string, note: string) => {
     const res = await fetch(`/api/sessions/${sessionId}/submissions/${id}`, {
       method: "PATCH",
@@ -177,6 +192,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
                 submission={{ ...submission, sessionId }}
                 onToggleExclude={toggleExclude}
                 onUpdateNote={updateNote}
+                onDelete={deleteSubmission}
               />
             ))
           )}
