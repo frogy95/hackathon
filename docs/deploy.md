@@ -1,3 +1,54 @@
+# Sprint 9 배포 체크리스트 — 운영 준비
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `bonus` 키워드 Grep — `src/db/schema.ts`, `src/db/seed.ts` 외 0건 확인
+- ✅ `screenshot-capturer`, `vision-evaluator` import 0건 확인 (파일 삭제 완료)
+- ✅ `src/lib/email-sender.ts` 신규 생성, `sendEvaluationResultEmail` export 확인
+- ✅ `evaluateAndNotify` 함수 `evaluation-runner.ts`에 export 확인
+- ✅ 제출 API POST에서 `waitUntil(evaluateAndNotify(...))` 호출 확인
+- ✅ `vercel.json` — submissions route maxDuration 300 설정 완료
+- ✅ `.env.example` — RESEND_API_KEY, EMAIL_FROM 항목 추가 완료
+- ✅ `src/lib/validations.ts` — `@ubcare.co.kr` 도메인 제한 refine 추가 확인
+- ✅ 중복 제출 로직 — upsert 제거, 409 Conflict 반환으로 변경 확인
+
+## 수동 검증 필요 항목
+
+### 1. Resend 도메인 인증 및 API 키 발급
+
+1. [https://resend.com](https://resend.com) 에서 계정 생성 (또는 로그인)
+2. 도메인 설정 → `ubcare.co.kr` 도메인 인증 완료 (DNS TXT 레코드 추가)
+3. API Keys 탭 → "Create API Key" → 발급된 키 복사
+
+### 2. Vercel 환경변수 추가
+
+Vercel 대시보드 → 프로젝트 → Settings → Environment Variables:
+
+| 변수명 | 값 |
+|--------|-----|
+| `RESEND_API_KEY` | Resend에서 발급한 API 키 (`re_...`) |
+| `EMAIL_FROM` | `최지선 <frogy95@ubcare.co.kr>` (Resend 인증 도메인의 주소) |
+| `NEXT_PUBLIC_APP_URL` | 배포된 앱 URL (예: `https://hackathon.ubcare.co.kr`) |
+
+### 3. 이메일 발송 기능 검증 (RESEND_API_KEY 설정 후)
+
+- ⬜ `@ubcare.co.kr` 이메일로 제출 → 평가 완료 후 이메일 수신 확인
+- ⬜ 이메일 본문에 최종 점수, 직군, 제출 시각 정상 표시 확인
+- ⬜ "결과 확인하기" 링크가 올바른 `/check/{sessionId}` URL로 연결되는지 확인
+
+### 4. 이메일 도메인 제한 검증
+
+- ⬜ `@gmail.com` 등 비 ubcare 이메일로 제출 폼 입력 → "ubcare.co.kr 이메일만 허용됩니다" 오류 메시지 확인
+- ⬜ `@ubcare.co.kr` 이메일 입력 → 정상 제출 가능 확인
+
+### 5. 중복 제출 거부 검증
+
+- ⬜ 동일 이메일로 2번 제출 시도 → "이미 제출하셨습니다. 중복 제출은 허용되지 않습니다." 오류 메시지 확인
+- ⬜ 첫 번째 제출은 정상 처리(201) 확인
+
+---
+
 # Sprint 8 배포 체크리스트 — Vercel 실서버 배포
 
 ## 자동 검증 완료 (2026-03-11)
