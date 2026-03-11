@@ -1,3 +1,80 @@
+# Sprint 8 배포 체크리스트 — Vercel 실서버 배포
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `better-sqlite3` 제거 + `@libsql/client`, `@vercel/functions` 추가 완료
+- ✅ `src/db/index.ts` — libsql 드라이버로 재작성 완료
+- ✅ `drizzle.config.ts` — `dialect: "turso"` + `dbCredentials.authToken` 추가 완료
+- ✅ `next.config.ts` — `serverExternalPackages: ["@libsql/client"]` 추가 완료
+- ✅ `vercel.json` — evaluate 300s, re-evaluate 60s 타임아웃 설정 완료
+- ✅ evaluate/route.ts, re-evaluate/route.ts — `waitUntil` 래핑 완료
+
+## 수동 검증 필요 항목
+
+### 1. Turso DB 생성 (최초 1회)
+
+```bash
+# Turso CLI 설치 (미설치 시)
+npm install -g @turso/cli
+
+# 로그인
+turso auth login
+
+# DB 생성
+turso db create hackathon-eval
+
+# DB URL 확인
+turso db show hackathon-eval --url
+# 출력 예: libsql://hackathon-eval-<account>.turso.io
+
+# 인증 토큰 발급
+turso db tokens create hackathon-eval
+```
+
+### 2. 로컬 .env.local 설정 (Turso 연결 테스트용)
+
+```bash
+# .env.local에 추가
+DATABASE_URL=libsql://hackathon-eval-<account>.turso.io
+DATABASE_AUTH_TOKEN=<발급된-토큰>
+```
+
+### 3. Turso DB에 스키마 + 시드 적용
+
+```bash
+npx drizzle-kit push
+npx tsx src/db/seed.ts
+```
+
+### 4. Vercel 프로젝트 연결 및 배포
+
+1. [Vercel 대시보드](https://vercel.com)에서 GitHub 저장소 import
+2. 아래 환경변수 설정:
+
+   | 변수명 | 값 |
+   |--------|-----|
+   | `DATABASE_URL` | `libsql://hackathon-eval-<account>.turso.io` |
+   | `DATABASE_AUTH_TOKEN` | Turso 인증 토큰 |
+   | `ADMIN_PASSWORD_HASH` | bcrypt 해시 (`node -e "require('bcryptjs').hash('your-password', 10).then(console.log)"`) |
+   | `JWT_SECRET` | 32자 이상 랜덤 문자열 |
+   | `ANTHROPIC_API_KEY` | Claude API 키 |
+   | `GITHUB_TOKEN` | GitHub Personal Access Token |
+   | `DISABLE_SCREENSHOTS` | `true` |
+
+3. "Deploy" 클릭
+
+### 5. 배포 후 기능 검증
+
+- ⬜ 배포 URL 랜딩 페이지 로드 확인
+- ⬜ `/admin` 로그인 확인
+- ⬜ `/admin/dashboard` 세션 목록 확인
+- ⬜ 제출 목록 조회 확인
+- ⬜ CSV 내보내기 확인
+- ⬜ 단건 재평가 실행 확인 (ANTHROPIC_API_KEY 필요)
+
+---
+
 # Sprint 7 배포 체크리스트
 
 ## 자동 검증 완료 (2026-03-11)
