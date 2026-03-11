@@ -41,6 +41,17 @@ export const submissions = sqliteTable("submissions", {
   errorMessage: text("error_message"), // 평가 오류 메시지 (nullable)
 });
 
+// 행운상 추첨 이력
+export const luckyDraws = sqliteTable("lucky_draws", {
+  id: text("id").primaryKey(),
+  sessionId: text("session_id")
+    .notNull()
+    .references(() => evaluationSessions.id),
+  settings: text("settings").notNull(), // JSON: LuckyDrawSettings
+  winners: text("winners").notNull(),   // JSON: LuckyDrawWinner[]
+  createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+});
+
 // 항목별 점수
 export const scores = sqliteTable("scores", {
   id: text("id").primaryKey(),

@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { submissions } from "@/db/schema";
 import { collectGitHubData } from "./github-collector";
 import { evaluateWithAI, saveEvaluationResult } from "./ai-evaluator";
+import { captureScreenshots } from "./screenshot-capturer";
+import { evaluateVisual } from "./vision-evaluator";
 
 // 동시성 제한 유틸리티
 async function withConcurrencyLimit<T>(
@@ -72,6 +74,21 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
       })
       .where(eq(submissions.id, submissionId));
 
+    // 스크린샷 캡처 단계 (deployUrl 있을 때만)
+    let screenshotResult = null;
+    if (submission.deployUrl) {
+      console.log(`[스크린샷] ${submissionId}: 캡처 시작 (${submission.deployUrl})`);
+      screenshotResult = await captureScreenshots(submissionId, submission.deployUrl);
+      await db
+        .update(submissions)
+        .set({
+          screenshots: JSON.stringify(screenshotResult),
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(submissions.id, submissionId));
+      console.log(`[스크린샷] ${submissionId}: 완료 (accessible=${screenshotResult.accessible})`);
+    }
+
     // AI 평가 단계
     await db
       .update(submissions)
@@ -82,6 +99,16 @@ export async function evaluateSingle(submissionId: string, model?: string): Prom
     // 직군 정보를 읽어 직군별 평가 기준 적용
     const jobRole = (submission.jobRole ?? "개발") as import("@/types").JobRole;
     const result = await evaluateWithAI(collectedData, hasDeployUrl, jobRole, model);
+
+    // Vision 보너스 평가 단계 (스크린샷 존재 시)
+    if (screenshotResult) {
+      console.log(`[Vision] ${submissionId}: 보너스 평가 시작`);
+      const bonusResult = await evaluateVisual(screenshotResult);
+      result.bonus = bonusResult;
+      result.bonus_score = bonusResult.totalBonus;
+      result.total_score = result.base_score + bonusResult.totalBonus;
+      console.log(`[Vision] ${submissionId}: 보너스 ${bonusResult.totalBonus}점`);
+    }
 
     await saveEvaluationResult(submissionId, result);
   } catch (error: unknown) {

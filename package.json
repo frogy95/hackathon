@@ -48,6 +48,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "kill-port": "^2.0.1",
+    "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "tailwindcss": "^4",
     "typescript": "^5"

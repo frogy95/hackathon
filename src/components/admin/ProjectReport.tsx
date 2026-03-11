@@ -1,10 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadarChart } from "./RadarChart";
 import { ExternalLink, Github } from "lucide-react";
 import type { JobRole } from "@/types";
+import type { ScreenshotResult } from "@/types/evaluation";
 
 interface ProjectReportData {
   submissionId: string;
@@ -19,6 +21,7 @@ interface ProjectReportData {
   bonusScore: number | null;
   bonusReasoning: string | null;
   totalScore: number;
+  screenshots?: ScreenshotResult | null;
 }
 
 // 직군별 평가 기준 라벨 및 만점 정의
@@ -221,6 +224,54 @@ export function ProjectReport({ report }: { report: ProjectReportData }) {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-zinc-700 leading-relaxed">{report.bonusReasoning}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 스크린샷 */}
+        {report.screenshots && report.screenshots.accessible && (report.screenshots.desktop || report.screenshots.mobile) && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-semibold">배포 스크린샷</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-4">
+                {report.screenshots.desktop && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-zinc-500 font-medium">데스크톱 (1280px)</p>
+                    <div className="border border-zinc-200 rounded-lg overflow-hidden">
+                      <Image
+                        src={report.screenshots.desktop}
+                        alt="데스크톱 스크린샷"
+                        width={640}
+                        height={400}
+                        className="w-full object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+                )}
+                {report.screenshots.mobile && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-zinc-500 font-medium">모바일 (390px)</p>
+                    <div className="border border-zinc-200 rounded-lg overflow-hidden max-w-[195px]">
+                      <Image
+                        src={report.screenshots.mobile}
+                        alt="모바일 스크린샷"
+                        width={195}
+                        height={422}
+                        className="w-full object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              {report.screenshots.capturedAt && (
+                <p className="text-xs text-zinc-400 mt-2">
+                  캡처 시각: {new Date(report.screenshots.capturedAt).toLocaleString("ko-KR")}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}

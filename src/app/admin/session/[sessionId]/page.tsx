@@ -8,7 +8,7 @@ import { SubmissionTable } from "@/components/admin/SubmissionTable";
 import { SessionActions } from "@/components/admin/SessionActions";
 import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
-import { ArrowLeft, BarChart2 } from "lucide-react";
+import { ArrowLeft, BarChart2, Gift } from "lucide-react";
 import { EvaluateButton } from "@/components/admin/EvaluateButton";
 import { PublishResultsButton } from "@/components/admin/PublishResultsButton";
 
@@ -100,6 +100,12 @@ export default async function SessionDetailPage({ params }: Props) {
             <Button size="sm" variant="outline">
               <BarChart2 className="h-4 w-4 mr-1.5" />
               결과 대시보드
+            </Button>
+          </Link>
+          <Link href={`/admin/session/${sessionId}/lucky-draw`}>
+            <Button size="sm" variant="outline">
+              <Gift className="h-4 w-4 mr-1.5" />
+              행운상 추첨
             </Button>
           </Link>
         </div>
