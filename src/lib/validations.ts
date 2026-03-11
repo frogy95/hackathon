@@ -59,3 +59,12 @@ export const updateSubmissionSchema = z.object({
 });
 
 export type UpdateSubmissionData = z.infer<typeof updateSubmissionSchema>;
+
+// 행운상 추첨 스키마
+export const luckyDrawSchema = z.object({
+  winnerCount: z.number().int().min(1, "최소 1명 이상이어야 합니다.").max(100),
+  targetRange: z.enum(["all", "done"]),
+  excludeSubmissionIds: z.array(z.string()).default([]),
+});
+
+export type LuckyDrawFormData = z.infer<typeof luckyDrawSchema>;

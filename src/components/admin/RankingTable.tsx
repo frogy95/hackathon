@@ -45,10 +45,14 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
   const [sortKey, setSortKey] = useState<string>("total");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  // 보너스 포함 여부에 따른 총점 최대값
+  const hasAnyBonus = rankings.some((r) => r.bonusScore > 0);
+  const totalMax = includeBonus && hasAnyBonus ? 110 : 100;
+
   // total 컬럼 포함한 전체 컬럼 목록
   const allColumns: ColumnDef[] = [
     ...columns,
-    { key: "total", label: "총점", max: 110 },
+    { key: "total", label: "총점", max: totalMax },
   ];
 
   const sorted = useMemo(() => {

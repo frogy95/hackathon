@@ -52,3 +52,25 @@ export interface Score {
   maxScore: number;
   reasoning: string | null;
 }
+
+// 행운상 추첨 관련 타입
+export interface LuckyDrawSettings {
+  winnerCount: number;         // 당첨 인원
+  targetRange: "all" | "done"; // 대상 범위: 전체 or 평가 완료만
+  excludeSubmissionIds: string[]; // 제외할 제출 ID 목록
+}
+
+export interface LuckyDrawWinner {
+  submissionId: string;
+  name: string;
+  email: string;
+  jobRole: JobRole;
+}
+
+export interface LuckyDraw {
+  id: string;
+  sessionId: string;
+  settings: LuckyDrawSettings;
+  winners: LuckyDrawWinner[];
+  createdAt: string;
+}
