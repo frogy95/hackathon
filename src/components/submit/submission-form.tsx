@@ -13,11 +13,12 @@ import { submissionSchema, type SubmissionFormData } from "@/lib/validations";
 interface SubmissionFormProps {
   sessionId: string;
   isExpired: boolean;
+  onJobRoleChange?: (role: string) => void;
 }
 
 type GithubStatus = "idle" | "checking" | "valid" | "invalid";
 
-export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
+export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: SubmissionFormProps) {
   const [submittedData, setSubmittedData] = useState<SubmissionFormData | null>(null);
   const [submittedAt, setSubmittedAt] = useState<string>("");
   const [submitError, setSubmitError] = useState<string>("");
@@ -36,6 +37,14 @@ export function SubmissionForm({ sessionId, isExpired }: SubmissionFormProps) {
   });
 
   const repoUrl = watch("repoUrl");
+  const jobRole = watch("jobRole");
+
+  // 직군 변경 시 부모에 알림
+  useEffect(() => {
+    if (jobRole && onJobRoleChange) {
+      onJobRoleChange(jobRole);
+    }
+  }, [jobRole, onJobRoleChange]);
 
   // GitHub URL 실시간 검증 (500ms debounce)
   useEffect(() => {

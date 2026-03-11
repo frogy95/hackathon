@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Table,
@@ -37,6 +38,7 @@ interface SubmissionTableProps {
 }
 
 export function SubmissionTable({ sessionId, submissions: initialSubmissions }: SubmissionTableProps) {
+  const router = useRouter();
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
 
@@ -91,6 +93,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
       prev.map((s) => (s.id === id ? { ...s, excluded: newExcluded } : s))
     );
     toast.success(newExcluded ? "제외 처리되었습니다." : "복원되었습니다.");
+    router.refresh();
   };
 
   const updateNote = async (id: string, note: string) => {
