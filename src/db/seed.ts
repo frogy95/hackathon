@@ -1,12 +1,13 @@
 import { db } from "./index";
-import { evaluationSessions, submissions, scores } from "./schema";
+import { evaluationSessions, submissions, scores, luckyDraws } from "./schema";
 
 async function seed() {
   console.log("시드 데이터 삽입 시작...");
 
-  // 기존 데이터 삭제
+  // 기존 데이터 삭제 (외래키 의존 순서: scores → submissions → luckyDraws → evaluationSessions)
   await db.delete(scores);
   await db.delete(submissions);
+  await db.delete(luckyDraws);
   await db.delete(evaluationSessions);
 
   // 세션 생성

@@ -19,7 +19,7 @@ export async function captureScreenshots(
   const capturedAt = new Date().toISOString();
 
   // 환경 변수로 비활성화 가능 (프로덕션 환경에서 Playwright 미설치 시)
-  if (process.env.DISABLE_SCREENSHOTS === "true") {
+  if (process.env.DISABLE_SCREENSHOTS?.toLowerCase() === "true") {
     return {
       desktop: null,
       mobile: null,
