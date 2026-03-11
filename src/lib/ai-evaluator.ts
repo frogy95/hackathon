@@ -49,12 +49,10 @@ ${rubricLines}
 {
   "total_score": <number>,
   "base_score": <number>,
-  "bonus_score": 0,
   "has_deploy_url": <boolean>,
   "categories": [
 ${categoriesJson}
   ],
-  "bonus": null,
   "summary": "<3-5문장의 종합 평가 의견>"
 }
 
@@ -326,9 +324,7 @@ export async function evaluateWithAI(
   // base_score 계산 검증 및 보정
   const calculatedBase = result.categories.reduce((sum: number, cat: CategoryResult) => sum + cat.score, 0);
   result.base_score = calculatedBase;
-  result.total_score = calculatedBase; // 보너스 미포함
-  result.bonus_score = 0;
-  result.bonus = null;
+  result.total_score = calculatedBase;
   result.has_deploy_url = hasDeployUrl;
 
   return result;
@@ -360,38 +356,13 @@ export async function saveEvaluationResult(
     });
   }
 
-  // 보너스 점수가 있으면 deployment_bonus 항목 추가
-  if (result.bonus) {
-    const bonusScoreId = crypto.randomUUID();
-    await db.insert(scores).values({
-      id: bonusScoreId,
-      submissionId,
-      criteriaKey: "deployment_bonus",
-      score: result.bonus.totalBonus,
-      maxScore: 10,
-      reasoning: [
-        `배포 가점: ${result.bonus.deploymentCredit}점`,
-        `시각 평가: ${result.bonus.visualScore}점`,
-        `총 보너스: ${result.bonus.totalBonus}점`,
-        ``,
-        result.bonus.reasoning,
-        ``,
-        `세부 점수:`,
-        `- 레이아웃: ${result.bonus.details.layout}/2`,
-        `- 색상/타이포: ${result.bonus.details.colorTypography}/2`,
-        `- 시각 계층: ${result.bonus.details.visualHierarchy}/2`,
-        `- 모바일 반응형: ${result.bonus.details.mobileResponsive}/1`,
-      ].join("\n"),
-    });
-  }
-
   // submissions 테이블 업데이트
   await db
     .update(submissions)
     .set({
       totalScore: result.total_score,
       baseScore: result.base_score,
-      bonusScore: result.bonus_score,
+      bonusScore: 0,
       status: "done",
       updatedAt: new Date().toISOString(),
     })

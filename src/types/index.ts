@@ -16,7 +16,6 @@ export interface Session {
 
 export interface CriteriaConfig {
   criteria: CriteriaItem[];
-  bonus?: CriteriaItem[];
 }
 
 export interface CriteriaItem {
@@ -39,7 +38,6 @@ export interface Submission {
   status: SubmissionStatus;
   totalScore: number | null;
   baseScore: number | null;
-  bonusScore: number | null;
   jobRole: JobRole;
   checkPassword: string;
 }

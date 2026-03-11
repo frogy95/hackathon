@@ -5,7 +5,10 @@ const githubUrlPattern = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]
 
 export const submissionSchema = z.object({
   name: z.string().min(2, "이름은 2자 이상이어야 합니다."),
-  email: z.string().email("올바른 이메일 주소를 입력해주세요."),
+  email: z
+    .string()
+    .email("올바른 이메일 주소를 입력해주세요.")
+    .refine((val) => val.endsWith("@ubcare.co.kr"), "ubcare.co.kr 이메일만 허용됩니다"),
   jobRole: z.enum(["PM/기획", "디자인", "개발", "QA"] as const),
   checkPassword: z
     .string()

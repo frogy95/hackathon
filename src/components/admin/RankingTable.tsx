@@ -10,8 +10,6 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import type { JobRole } from "@/types";
 
@@ -24,7 +22,6 @@ interface RankingEntry {
   jobRole: JobRole;
   scores: Record<string, number>;
   baseScore: number;
-  bonusScore: number;
   totalScore: number;
 }
 
@@ -41,32 +38,22 @@ interface RankingTableProps {
 }
 
 export function RankingTable({ rankings, sessionId, columns }: RankingTableProps) {
-  const [includeBonus, setIncludeBonus] = useState(true);
   const [sortKey, setSortKey] = useState<string>("total");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-
-  // 보너스 포함 여부에 따른 총점 최대값
-  const hasAnyBonus = rankings.some((r) => r.bonusScore > 0);
-  const totalMax = includeBonus && hasAnyBonus ? 110 : 100;
 
   // total 컬럼 포함한 전체 컬럼 목록
   const allColumns: ColumnDef[] = [
     ...columns,
-    { key: "total", label: "총점", max: totalMax },
+    { key: "total", label: "총점", max: 100 },
   ];
 
   const sorted = useMemo(() => {
-    return [...rankings]
-      .map((r) => ({
-        ...r,
-        displayTotal: includeBonus ? r.totalScore : r.baseScore,
-      }))
-      .sort((a, b) => {
-        const av = sortKey === "total" ? a.displayTotal : (a.scores[sortKey] ?? 0);
-        const bv = sortKey === "total" ? b.displayTotal : (b.scores[sortKey] ?? 0);
-        return sortDir === "desc" ? bv - av : av - bv;
-      });
-  }, [rankings, includeBonus, sortKey, sortDir]);
+    return [...rankings].sort((a, b) => {
+      const av = sortKey === "total" ? a.totalScore : (a.scores[sortKey] ?? 0);
+      const bv = sortKey === "total" ? b.totalScore : (b.scores[sortKey] ?? 0);
+      return sortDir === "desc" ? bv - av : av - bv;
+    });
+  }, [rankings, sortKey, sortDir]);
 
   const handleSort = (key: string) => {
     if (sortKey === key) {
@@ -79,17 +66,6 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Switch
-          id="bonus-toggle"
-          checked={includeBonus}
-          onCheckedChange={setIncludeBonus}
-        />
-        <Label htmlFor="bonus-toggle" className="cursor-pointer text-sm">
-          배포 보너스 포함
-        </Label>
-      </div>
-
       <Table>
         <TableHeader>
           <TableRow>
@@ -114,9 +90,6 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
                 </span>
               </TableHead>
             ))}
-            {includeBonus && (
-              <TableHead className="text-right text-zinc-400 text-xs font-normal">보너스</TableHead>
-            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -136,12 +109,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
                   {entry.scores[key] ?? 0}
                 </TableCell>
               ))}
-              <TableCell className="text-right font-semibold">{entry.displayTotal}</TableCell>
-              {includeBonus && (
-                <TableCell className="text-right text-zinc-400 text-xs">
-                  +{entry.bonusScore}
-                </TableCell>
-              )}
+              <TableCell className="text-right font-semibold">{entry.totalScore}</TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -25,10 +25,6 @@ async function seed() {
         { key: "ux", label: "완성도 및 UX", maxScore: 25 },
         { key: "idea", label: "아이디어 및 활용 가치", maxScore: 15 },
       ],
-      bonus: [
-        { key: "deploy_exists", label: "배포 가점", maxScore: 3 },
-        { key: "visual_quality", label: "시각적 완성도", maxScore: 7 },
-      ],
     }),
     resultsPublished: false,
   });
