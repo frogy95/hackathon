@@ -12,6 +12,7 @@ npm-debug.log*
 # Next.js
 .next/
 out/
+next-env.d.ts
 
 # TypeScript 증분 빌드 캐시
 *.tsbuildinfo
