@@ -2,7 +2,8 @@ import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadarChart } from "./RadarChart";
+import { RadarChart } from "@/components/ui/radar-chart";
+import { normalizeReasoning } from "@/lib/utils";
 import { ExternalLink, Github } from "lucide-react";
 import type { JobRole } from "@/types";
 
@@ -52,29 +53,6 @@ const ROLE_CRITERIA_LABELS: Record<JobRole, Record<string, { label: string; max:
   },
 };
 
-// 기존 JSON 형식 reasoning을 마크다운으로 변환 (하위 호환)
-function normalizeReasoning(text: string): string {
-  // 이미 마크다운이면 그대로 반환
-  if (text.includes("###")) return text;
-
-  // JSON 파싱 시도 (구 형식 호환)
-  try {
-    const parsed = JSON.parse(text) as {
-      summary?: string;
-      sub_items?: Array<{ name: string; score: number; max_score: number; reasoning: string }>;
-    };
-    if (parsed.sub_items && Array.isArray(parsed.sub_items)) {
-      return parsed.sub_items
-        .map((s) => `### ${s.name} (${s.score}/${s.max_score})\n${s.reasoning}`)
-        .join("\n\n");
-    }
-    if (parsed.summary) return parsed.summary;
-  } catch {
-    // JSON이 아님 — 텍스트 그대로 반환
-  }
-
-  return text;
-}
 
 export function ProjectReport({ report }: { report: ProjectReportData }) {
   const criteriaLabels = ROLE_CRITERIA_LABELS[report.jobRole] ?? ROLE_CRITERIA_LABELS["개발"];
