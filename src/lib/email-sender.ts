@@ -43,6 +43,8 @@ export async function sendEvaluationResultEmail(
 
   const subject = `[ubcare 해커톤] ${name}님의 평가 결과가 도착했습니다`;
 
+  const checkUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://hackathon-gamma-ebon.vercel.app"}/check/${sessionId}`;
+
   const html = `
 <!DOCTYPE html>
 <html lang="ko">
@@ -51,56 +53,74 @@ export async function sendEvaluationResultEmail(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${subject}</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f4f4f5; margin: 0; padding: 24px;">
-  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f0f0f2; margin: 0; padding: 32px 16px;">
+  <div style="max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10);">
+
     <!-- 헤더 -->
-    <div style="background-color: #18181b; padding: 32px 32px 24px;">
-      <p style="margin: 0; font-size: 13px; color: #a1a1aa; letter-spacing: 0.05em; text-transform: uppercase;">ubcare 해커톤</p>
-      <h1 style="margin: 8px 0 0; font-size: 22px; font-weight: 700; color: #ffffff;">평가 결과 안내</h1>
+    <div style="background: linear-gradient(135deg, #18181b 0%, #27272a 100%); padding: 40px 36px 32px; text-align: center;">
+      <div style="font-size: 48px; margin-bottom: 12px;">🏆</div>
+      <p style="margin: 0 0 6px; font-size: 12px; color: #a1a1aa; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600;">ubcare 해커톤</p>
+      <h1 style="margin: 0; font-size: 26px; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">평가 결과 안내</h1>
     </div>
 
     <!-- 본문 -->
-    <div style="padding: 32px;">
-      <p style="margin: 0 0 20px; font-size: 15px; color: #3f3f46; line-height: 1.6;">
-        안녕하세요, <strong>${name}</strong>님!<br>
+    <div style="padding: 36px 36px 28px;">
+      <p style="margin: 0 0 28px; font-size: 15px; color: #52525b; line-height: 1.7;">
+        안녕하세요, <strong style="color: #18181b;">${name}</strong>님!<br>
         제출하신 해커톤 결과물에 대한 AI 평가가 완료되었습니다.
       </p>
 
       <!-- 점수 카드 -->
-      <div style="background: #f4f4f5; border-radius: 10px; padding: 24px; text-align: center; margin-bottom: 24px;">
-        <p style="margin: 0 0 4px; font-size: 13px; color: #71717a;">최종 점수</p>
-        <p style="margin: 0; font-size: 48px; font-weight: 800; color: #18181b; line-height: 1;">${totalScore}</p>
-        <p style="margin: 8px 0 0; font-size: 13px; color: #71717a;">기본 점수 ${baseScore}점 · 직군: ${jobRole}</p>
-      </div>
-
-      <!-- 제출 정보 -->
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px;">
-        <tr>
-          <td style="padding: 8px 0; color: #71717a; width: 100px;">제출 시각</td>
-          <td style="padding: 8px 0; color: #3f3f46;">${submittedDate}</td>
-        </tr>
-      </table>
-
-      <!-- 안내 -->
-      <div style="background: #eff6ff; border-left: 3px solid #3b82f6; padding: 14px 16px; border-radius: 0 6px 6px 0; margin-bottom: 24px;">
-        <p style="margin: 0; font-size: 14px; color: #1d4ed8; line-height: 1.5;">
-          조회 페이지에서 바로 상세 평가 내용을 확인하실 수 있습니다.
+      <div style="background: linear-gradient(135deg, #18181b 0%, #3f3f46 100%); border-radius: 14px; padding: 28px 24px; text-align: center; margin-bottom: 28px;">
+        <p style="margin: 0 0 12px; font-size: 12px; color: #a1a1aa; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600;">최종 점수</p>
+        <div style="display: inline-block; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.15); border-radius: 50%; width: 120px; height: 120px; line-height: 120px; margin-bottom: 14px;">
+          <span style="font-size: 44px; font-weight: 900; color: #ffffff; line-height: 1;">${totalScore}</span>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: #a1a1aa;">
+          기본 점수 <strong style="color: #d4d4d8;">${baseScore}점</strong> &nbsp;·&nbsp; 직군: <strong style="color: #d4d4d8;">${jobRole}</strong>
         </p>
       </div>
 
-      <!-- 버튼 -->
+      <!-- 제출 정보 -->
+      <div style="background: #fafafa; border: 1px solid #e4e4e7; border-radius: 10px; padding: 18px 20px; margin-bottom: 24px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <tr>
+            <td style="padding: 6px 0; color: #71717a; width: 90px;">📅 제출 시각</td>
+            <td style="padding: 6px 0; color: #3f3f46; font-weight: 500;">${submittedDate}</td>
+          </tr>
+          <tr>
+            <td style="padding: 6px 0; color: #71717a;">💼 직군</td>
+            <td style="padding: 6px 0; color: #3f3f46; font-weight: 500;">${jobRole}</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 안내 박스 -->
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-left: 4px solid #3b82f6; padding: 16px 20px; border-radius: 0 10px 10px 0; margin-bottom: 28px;">
+        <p style="margin: 0 0 4px; font-size: 13px; font-weight: 700; color: #1e40af;">💡 상세 결과 확인</p>
+        <p style="margin: 0; font-size: 13px; color: #1d4ed8; line-height: 1.6;">
+          아래 버튼을 클릭하면 항목별 점수와 AI 피드백을 상세히 확인하실 수 있습니다.
+        </p>
+      </div>
+
+      <!-- CTA 버튼 -->
       <div style="text-align: center;">
-        <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://hackathon.ubcare.co.kr"}/check/${sessionId}"
-           style="display: inline-block; background-color: #18181b; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: 600;">
-          결과 확인하기
+        <a href="${checkUrl}"
+           style="display: inline-block; background: linear-gradient(135deg, #18181b 0%, #3f3f46 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 10px; font-size: 15px; font-weight: 700; letter-spacing: 0.01em; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+          🔍 결과 확인하기
         </a>
+        <p style="margin: 12px 0 0; font-size: 12px; color: #a1a1aa;">버튼이 작동하지 않으면 아래 링크를 복사하세요</p>
+        <p style="margin: 4px 0 0; font-size: 11px; color: #71717a; word-break: break-all;">${checkUrl}</p>
       </div>
     </div>
 
     <!-- 푸터 -->
-    <div style="padding: 20px 32px; border-top: 1px solid #f4f4f5;">
-      <p style="margin: 0; font-size: 12px; color: #a1a1aa; text-align: center;">
+    <div style="padding: 20px 36px 24px; border-top: 1px solid #e4e4e7; background: #fafafa;">
+      <p style="margin: 0 0 4px; font-size: 12px; color: #a1a1aa; text-align: center;">
         이 메일은 ubcare 해커톤 평가 시스템에서 자동 발송되었습니다.
+      </p>
+      <p style="margin: 0; font-size: 12px; color: #d4d4d8; text-align: center;">
+        문의사항이 있으시면 해커톤 운영진에게 연락해 주세요.
       </p>
     </div>
   </div>
