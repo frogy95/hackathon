@@ -91,7 +91,7 @@ export function SubmissionDetail({
             <div className="pt-2">
               {submission.editCount < 3 ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/submit/${sessionId}`}>
+                  <Link href={`/submit/${sessionId}?email=${encodeURIComponent(submission.email)}&checkPassword=${encodeURIComponent(submission.checkPassword)}`}>
                     수정&amp;재평가 요청 ({submission.editCount}/3)
                   </Link>
                 </Button>

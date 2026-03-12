@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { SubmissionForm } from "./submission-form";
 import { CriteriaPanel } from "./criteria-panel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface SubmitPageClientProps {
   sessionId: string;
@@ -24,11 +25,17 @@ export function SubmitPageClient({ sessionId, isExpired }: SubmitPageClientProps
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <SubmissionForm
-            sessionId={sessionId}
-            isExpired={isExpired}
-            onJobRoleChange={setSelectedJobRole}
-          />
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12 text-zinc-500 gap-2">
+              <Loader2 className="h-5 w-5 animate-spin" />
+            </div>
+          }>
+            <SubmissionForm
+              sessionId={sessionId}
+              isExpired={isExpired}
+              onJobRoleChange={setSelectedJobRole}
+            />
+          </Suspense>
         </CardContent>
       </Card>
 

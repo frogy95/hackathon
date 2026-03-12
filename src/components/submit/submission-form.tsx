@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -19,11 +20,13 @@ interface SubmissionFormProps {
 type GithubStatus = "idle" | "checking" | "valid" | "invalid";
 
 export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: SubmissionFormProps) {
+  const searchParams = useSearchParams();
   const [submittedData, setSubmittedData] = useState<SubmissionFormData | null>(null);
   const [submittedAt, setSubmittedAt] = useState<string>("");
   const [submitError, setSubmitError] = useState<string>("");
   const [githubStatus, setGithubStatus] = useState<GithubStatus>("idle");
   const [githubMessage, setGithubMessage] = useState<string>("");
+  const [isPrefilling, setIsPrefilling] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const {
@@ -31,10 +34,41 @@ export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: Submis
     handleSubmit,
     watch,
     setError,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<SubmissionFormData>({
     resolver: zodResolver(submissionSchema),
   });
+
+  // 쿼리 파라미터로 기존 제출 데이터 프리필
+  useEffect(() => {
+    const email = searchParams.get("email");
+    const checkPassword = searchParams.get("checkPassword");
+    if (!email || !checkPassword) return;
+
+    setIsPrefilling(true);
+    fetch(`/api/sessions/${sessionId}/submissions/check?email=${encodeURIComponent(email)}&checkPassword=${encodeURIComponent(checkPassword)}`)
+      .then((res) => res.ok ? res.json() : null)
+      .then((json) => {
+        const sub = json?.data?.submission;
+        if (sub) {
+          reset({
+            name: sub.name ?? "",
+            email: sub.email ?? "",
+            jobRole: sub.jobRole ?? "",
+            checkPassword: sub.checkPassword ?? "",
+            repoUrl: sub.repoUrl ?? "",
+            deployUrl: sub.deployUrl ?? "",
+          });
+          if (sub.jobRole && onJobRoleChange) {
+            onJobRoleChange(sub.jobRole);
+          }
+        }
+      })
+      .catch(() => null)
+      .finally(() => setIsPrefilling(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const repoUrl = watch("repoUrl");
   const jobRole = watch("jobRole");
@@ -112,6 +146,15 @@ export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: Submis
       <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
         <p className="text-red-700 font-medium">제출 마감이 지났습니다.</p>
         <p className="text-red-600 text-sm mt-1">더 이상 제출할 수 없습니다.</p>
+      </div>
+    );
+  }
+
+  if (isPrefilling) {
+    return (
+      <div className="flex items-center justify-center py-12 text-zinc-500 gap-2">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span className="text-sm">기존 제출 데이터를 불러오는 중...</span>
       </div>
     );
   }
