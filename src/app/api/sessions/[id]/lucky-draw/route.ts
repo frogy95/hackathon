@@ -76,8 +76,23 @@ export const POST = withAdminAuth(async (req: NextRequest, context: unknown) => 
     ? allSubs.filter((s) => s.status === "done")
     : allSubs;
 
-  // 제외 목록 제거
-  candidates = candidates.filter((s) => !excludeSubmissionIds.includes(s.id));
+  // 기존 당첨자 조회 → 자동 제외
+  const previousDraws = await db
+    .select()
+    .from(luckyDraws)
+    .where(eq(luckyDraws.sessionId, sessionId));
+
+  const previousWinnerIds = new Set(
+    previousDraws.flatMap((d) => {
+      const winners = JSON.parse(d.winners) as LuckyDrawWinner[];
+      return winners.map((w) => w.submissionId);
+    })
+  );
+
+  // 제외 목록 제거 (수동 제외 + 이전 당첨자 자동 제외)
+  candidates = candidates.filter(
+    (s) => !excludeSubmissionIds.includes(s.id) && !previousWinnerIds.has(s.id)
+  );
 
   if (candidates.length === 0) {
     return NextResponse.json({ error: "추첨 대상이 없습니다." }, { status: 400 });
