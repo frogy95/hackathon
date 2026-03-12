@@ -84,7 +84,7 @@ export async function sendEvaluationResultEmail(
       <!-- 안내 -->
       <div style="background: #eff6ff; border-left: 3px solid #3b82f6; padding: 14px 16px; border-radius: 0 6px 6px 0; margin-bottom: 24px;">
         <p style="margin: 0; font-size: 14px; color: #1d4ed8; line-height: 1.5;">
-          결과 공개 후 조회 페이지에서 상세 평가 내용을 확인하실 수 있습니다.
+          조회 페이지에서 바로 상세 평가 내용을 확인하실 수 있습니다.
         </p>
       </div>
 
