@@ -114,25 +114,29 @@ export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: Submis
 
   const onSubmit = async (data: SubmissionFormData) => {
     setSubmitError("");
-    const res = await fetch(`/api/sessions/${sessionId}/submissions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}/submissions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
-    if (!res.ok) {
-      const json = await res.json().catch(() => null);
-      const code = json?.error?.code;
-      if (code === "DEADLINE_PASSED") {
-        setError("root", { message: "제출 마감이 지났습니다." });
-      } else {
-        setSubmitError(json?.error?.message ?? "제출에 실패했습니다. 다시 시도해주세요.");
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        const code = json?.error?.code;
+        if (code === "DEADLINE_PASSED") {
+          setError("root", { message: "제출 마감이 지났습니다." });
+        } else {
+          setSubmitError(json?.error?.message ?? "제출에 실패했습니다. 다시 시도해주세요.");
+        }
+        return;
       }
-      return;
-    }
 
-    setSubmittedAt(new Date().toISOString());
-    setSubmittedData(data);
+      setSubmittedAt(new Date().toISOString());
+      setSubmittedData(data);
+    } catch {
+      setSubmitError("네트워크 오류가 발생했습니다. 다시 시도해주세요.");
+    }
   };
 
   if (submittedData) {

@@ -55,6 +55,20 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
     });
   }, [rankings, sortKey, sortDir]);
 
+  // 동점자 순위 계산 (1,1,3 방식)
+  const ranks = useMemo(() => {
+    return sorted.map((entry, idx) => {
+      if (idx === 0) return 1;
+      const prev = sorted[idx - 1];
+      const prevScore = sortKey === "total" ? prev.totalScore : (prev.scores[sortKey] ?? 0);
+      const currScore = sortKey === "total" ? entry.totalScore : (entry.scores[sortKey] ?? 0);
+      return currScore === prevScore ? 0 : idx + 1; // 0은 직전 동점자와 동순위를 나타냄
+    }).reduce<number[]>((acc, r, idx) => {
+      acc.push(r === 0 ? acc[idx - 1] : r);
+      return acc;
+    }, []);
+  }, [sorted, sortKey]);
+
   const handleSort = (key: string) => {
     if (sortKey === key) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -96,7 +110,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
         <TableBody>
           {sorted.map((entry, idx) => (
             <TableRow key={entry.submissionId}>
-              <TableCell className="font-bold text-zinc-500">{idx + 1}</TableCell>
+              <TableCell className="font-bold text-zinc-500">{ranks[idx]}</TableCell>
               <TableCell>
                 <Link
                   href={`/admin/session/${sessionId}/results/${entry.submissionId}`}

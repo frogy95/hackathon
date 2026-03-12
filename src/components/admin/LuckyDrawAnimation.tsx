@@ -76,6 +76,15 @@ export function LuckyDrawAnimation({
   const [phase, setPhase] = useState<"idle" | "spinning" | "revealing" | "done">("idle");
   const [revealIndex, setRevealIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const spinTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (spinTimeoutRef.current) clearTimeout(spinTimeoutRef.current);
+      if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    };
+  }, []);
 
   // 이름 풀 준비 (최소 10개 이상 확보)
   const namePool = candidateNames.length >= 3 ? candidateNames : ["참가자A", "참가자B", "참가자C"];
@@ -85,7 +94,7 @@ export function LuckyDrawAnimation({
     setRevealIndex(-1);
 
     // 3초 후 순차 공개 시작
-    setTimeout(() => {
+    spinTimeoutRef.current = setTimeout(() => {
       setPhase("revealing");
       revealNext(0);
     }, 3000);
@@ -97,7 +106,7 @@ export function LuckyDrawAnimation({
       return;
     }
     setRevealIndex(idx);
-    setTimeout(() => revealNext(idx + 1), 800);
+    revealTimeoutRef.current = setTimeout(() => revealNext(idx + 1), 800);
   };
 
   const handleFullscreen = () => {

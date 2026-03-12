@@ -1,9 +1,11 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? "fallback-secret-change-in-production"
-);
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error("JWT_SECRET 환경 변수가 설정되지 않았습니다.");
+}
+const JWT_SECRET = new TextEncoder().encode(jwtSecret);
 
 // 관리자 비밀번호 검증 (bcrypt)
 export async function verifyAdminPassword(password: string): Promise<boolean> {

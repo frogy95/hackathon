@@ -38,25 +38,29 @@ export function CheckForm({ sessionId, resultsPublished, submissionDeadline }: C
     setNotFound(false);
     setResult(null);
 
-    const params = new URLSearchParams({ email: data.email, checkPassword: data.checkPassword });
-    const res = await fetch(`/api/sessions/${sessionId}/submissions/check?${params}`);
+    try {
+      const params = new URLSearchParams({ email: data.email, checkPassword: data.checkPassword });
+      const res = await fetch(`/api/sessions/${sessionId}/submissions/check?${params}`);
 
-    if (res.status === 404) {
-      setNotFound(true);
-      return;
+      if (res.status === 404) {
+        setNotFound(true);
+        return;
+      }
+
+      if (!res.ok) {
+        setApiError("조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+        return;
+      }
+
+      const json = await res.json();
+      setResult({
+        submission: json.data.submission as Submission,
+        scores: json.data.scores as Score[],
+        criteriaConfig: (json.data.criteriaConfig as CriteriaConfig) ?? null,
+      });
+    } catch {
+      setApiError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     }
-
-    if (!res.ok) {
-      setApiError("조회 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-      return;
-    }
-
-    const json = await res.json();
-    setResult({
-      submission: json.data.submission as Submission,
-      scores: json.data.scores as Score[],
-      criteriaConfig: (json.data.criteriaConfig as CriteriaConfig) ?? null,
-    });
   };
 
   const isDeadlinePassed = new Date(submissionDeadline) < new Date();

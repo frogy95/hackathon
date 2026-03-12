@@ -14,21 +14,21 @@
 
 ### 1. 테스트 이메일 sessionId 검증
 
-- ⬜ `POST /api/admin/test-email` (인증 후) → 수신 이메일의 "결과 확인하기" URL이 `/check/{실제세션ID}` 형식인지 확인 (이전: `/check/test-session`)
-- ⬜ 세션이 없는 상태에서 테스트 이메일 발송 → 400 에러 + "세션이 없습니다." 메시지 확인
+- ✅ `POST /api/admin/test-email` (인증 후) → 수신 이메일의 "결과 확인하기" URL이 `/check/{실제세션ID}` 형식인지 확인 (이전: `/check/test-session`)
+- ✅ 세션이 없는 상태에서 테스트 이메일 발송 → 400 에러 + "세션이 없습니다." 메시지 확인
 
 ### 2. 즉시 결과 확인 검증
 
 `/check/session-2026-spring` (이메일: `kimcs@example.com`, 조회비밀번호: `1234`):
 
-- ⬜ 결과 공개 토글 비활성 상태에서도 `status === "done"` 참가자에게 즉시 점수 표시 확인
-- ⬜ "결과가 아직 공개되지 않았습니다." 문구가 더 이상 표시되지 않는지 확인
-- ⬜ `status !== "done"` 참가자는 기존과 동일하게 안내 문구 표시 확인
+- ✅ 결과 공개 토글 비활성 상태에서도 `status === "done"` 참가자에게 즉시 점수 표시 확인
+- ✅ "결과가 아직 공개되지 않았습니다." 문구가 더 이상 표시되지 않는지 확인
+- ✅ `status !== "done"` 참가자는 기존과 동일하게 안내 문구 표시 확인
 
 ### 3. Vercel 재배포
 
-- ⬜ `sprint11` 브랜치 또는 `main` 머지 후 Vercel 자동 배포 확인
-- ⬜ 배포 환경에서 위 1, 2항 재검증
+- ✅ `sprint11` 브랜치 또는 `main` 머지 후 Vercel 자동 배포 확인
+- ✅ 배포 환경에서 위 1, 2항 재검증
 
 ---
 
@@ -42,8 +42,8 @@
 
 ## 수동 실행 필요 항목
 
-- ⬜ Gmail 2단계 인증 활성화 → 앱 비밀번호 발급 (https://myaccount.google.com/apppasswords)
-- ⬜ `.env.local`에 SMTP 설정 추가:
+- ✅ Gmail 2단계 인증 활성화 → 앱 비밀번호 발급 (https://myaccount.google.com/apppasswords)
+- ✅ `.env.local`에 SMTP 설정 추가:
   ```
   SMTP_HOST=smtp.gmail.com
   SMTP_PORT=465
@@ -51,9 +51,9 @@
   SMTP_PASS=your-app-password
   EMAIL_FROM=해커톤 평가 시스템 <your-gmail@gmail.com>
   ```
-- ⬜ Vercel 환경변수 설정: `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
-- ⬜ Vercel에서 기존 `RESEND_API_KEY` 환경변수 제거
-- ⬜ `npm run dev` → 재평가 실행 → 이메일 수신 확인
+- ✅ Vercel 환경변수 설정: `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
+- ✅ Vercel에서 기존 `RESEND_API_KEY` 환경변수 제거
+- ✅ `npm run dev` → 재평가 실행 → 이메일 수신 확인
 
 ---
 
@@ -86,11 +86,11 @@ npx drizzle-kit push
 
 ### 수정&재평가 기능 검증 (`npm run dev` 실행 후)
 
-- ⬜ 동일 이메일로 재제출 시 "수정&재평가 요청 (1/3)" 버튼 표시 확인
-- ⬜ 3회 수정 후 재제출 → 403 오류 + "수정 횟수 제한(3회)을 초과했습니다." 응답 확인
-- ⬜ 참가자 UI에서 3회 초과 시 버튼 disabled 확인
-- ⬜ 재평가 완료 후 이메일 수신 확인 (SMTP_USER, SMTP_PASS 설정 필요)
-- ⬜ error 상태 제출 조회 → "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다." 안내 문구 확인
+- ✅ 동일 이메일로 재제출 시 "수정&재평가 요청 (1/3)" 버튼 표시 확인
+- ✅ 3회 수정 후 재제출 → 403 오류 + "수정 횟수 제한(3회)을 초과했습니다." 응답 확인
+- ✅ 참가자 UI에서 3회 초과 시 버튼 disabled 확인
+- ✅ 재평가 완료 후 이메일 수신 확인 (SMTP_USER, SMTP_PASS 설정 필요)
+- ✅ error 상태 제출 조회 → "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다." 안내 문구 확인
 
 ---
 
@@ -275,11 +275,11 @@ npx drizzle-kit push
 npx playwright install chromium
 ```
 
-- ⬜ deployUrl이 있는 제출 건 AI 평가 실행 → `public/screenshots/{id}-desktop.png`, `{id}-mobile.png` 파일 생성 확인
-- ⬜ 결과 상세 리포트(`/admin/session/.../results/...`)에서 스크린샷 이미지 표시 확인
-- ⬜ Vision 평가 근거 텍스트 표시 확인
-- ⬜ 순위표에서 배포 보너스 포함 시 총점 최대 110점으로 표시 확인
-- ⬜ 배포 보너스 포함/미포함 토글 시 총점 변동 확인
+- ✅ deployUrl이 있는 제출 건 AI 평가 실행 → `public/screenshots/{id}-desktop.png`, `{id}-mobile.png` 파일 생성 확인
+- ✅ 결과 상세 리포트(`/admin/session/.../results/...`)에서 스크린샷 이미지 표시 확인
+- ✅ Vision 평가 근거 텍스트 표시 확인
+- ✅ 순위표에서 배포 보너스 포함 시 총점 최대 110점으로 표시 확인
+- ✅ 배포 보너스 포함/미포함 토글 시 총점 변동 확인
 
 ---
 

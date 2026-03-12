@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real, index } from "drizzle-orm/sqlite-core";
 
 // 평가 세션
 export const evaluationSessions = sqliteTable("evaluation_sessions", {
@@ -40,7 +40,11 @@ export const submissions = sqliteTable("submissions", {
   checkPassword: text("check_password").notNull().default("0000"), // 숫자 4자리
   errorMessage: text("error_message"), // 평가 오류 메시지 (nullable)
   editCount: integer("edit_count").notNull().default(0), // 수정&재평가 요청 횟수
-});
+}, (t) => ({
+  sessionIdIdx: index("submissions_session_id_idx").on(t.sessionId),
+  emailIdx: index("submissions_email_idx").on(t.email),
+  statusIdx: index("submissions_status_idx").on(t.status),
+}));
 
 // 행운상 추첨 이력
 export const luckyDraws = sqliteTable("lucky_draws", {
@@ -63,4 +67,6 @@ export const scores = sqliteTable("scores", {
   score: real("score").notNull(),
   maxScore: real("max_score").notNull(),
   reasoning: text("reasoning"),
-});
+}, (t) => ({
+  submissionIdIdx: index("scores_submission_id_idx").on(t.submissionId),
+}));

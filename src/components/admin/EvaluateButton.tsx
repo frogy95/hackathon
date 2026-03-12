@@ -1,7 +1,7 @@
 "use client";
 
 // 평가 실행 버튼 + 모델 선택 + 평가 리셋 버튼 컴포넌트
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,11 @@ export function EvaluateButton({ sessionId, submissionCount, doneCount = 0 }: Ev
       pollingRef.current = null;
     }
   }, []);
+
+  // unmount 시 폴링 정리
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   // 진행률 폴링
   const pollProgress = useCallback(async () => {

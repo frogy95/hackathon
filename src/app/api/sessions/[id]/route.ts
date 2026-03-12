@@ -9,9 +9,9 @@ interface Context {
   params: Promise<{ id: string }>;
 }
 
-// GET /api/sessions/[id] — 세션 상세 + 제출 목록
-export async function GET(_request: NextRequest, context: Context) {
-  const { id } = await context.params;
+// GET /api/sessions/[id] — 세션 상세 + 제출 목록 (관리자 전용)
+export const GET = withAdminAuth(async (_request: NextRequest, context: unknown) => {
+  const { id } = await (context as Context).params;
 
   try {
     const session = await db
@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest, context: Context) {
     console.error("세션 상세 조회 오류:", e);
     return apiError(ErrorCode.INTERNAL_ERROR.code, "세션 조회에 실패했습니다.", ErrorCode.INTERNAL_ERROR.status);
   }
-}
+});
 
 // PATCH /api/sessions/[id] — 세션 수정 (관리자 전용)
 export const PATCH = withAdminAuth(async (request: NextRequest, context: unknown) => {

@@ -1,38 +1,133 @@
-# choiji-guide
+# AI-Native 해커톤 평가 시스템
 
-Claude Code 에이전트 및 스킬 설정을 공유하기 위한 템플릿 레포지토리입니다.
+해커톤 참가자가 산출물을 제출하고, 관리자가 AI 자동 평가를 실행하여 일관된 평가 결과를 제공하는 웹 애플리케이션.
 
-## 개요
+## 주요 기능
 
-소규모 개발팀이 Claude Code를 활용하여 PRD 작성부터 스프린트 계획, 구현, 마무리까지 일관된 워크플로우로 개발할 수 있도록 에이전트와 스킬을 정의합니다.
+- **참가자 제출**: GitHub 저장소 URL + 배포 URL 제출, GitHub public repo 실시간 검증
+- **이메일 인증**: `@ubcare.co.kr` 도메인 제한, 조회 비밀번호(4자리) 기반 결과 조회
+- **AI 자동 평가**: Claude API(haiku/sonnet 선택)로 직군별 루브릭 적용, 코드·문서 기반 채점
+- **결과 대시보드**: 직군별 점수 비교, 레이더 차트, 평가 근거 마크다운 표시
+- **행운상 추첨**: 슬롯머신 애니메이션, 전체화면 지원, 추첨 이력 관리
+- **이메일 알림**: 평가 완료 시 Gmail SMTP로 결과 안내 메일 발송
+- **수정·재평가**: 최대 3회 제출 수정 + 재평가 요청 가능
 
-## 사용 방법
+## 기술 스택
 
-이 레포지토리의 `.claude/` 디렉토리를 여러분의 프로젝트에 복사하세요.
+| 구분 | 기술 |
+|------|------|
+| 프레임워크 | Next.js 16.1.6 (App Router) + TypeScript |
+| UI | Tailwind CSS + shadcn/ui + Recharts |
+| DB | Drizzle ORM + Turso (libsql) |
+| AI | Anthropic Claude API (haiku / sonnet) |
+| 이메일 | nodemailer + Gmail SMTP |
+| 배포 | Vercel |
+
+## 시작하기
+
+### 1. 의존성 설치
 
 ```bash
-cp -r .claude/ /path/to/your-project/.claude/
+npm install
 ```
 
-복사 후, 각 에이전트 파일(`.claude/agents/*.md`)의 frontmatter에 절대 경로가 없는지 확인하세요. `memory: project` 설정이 런타임에 올바른 경로를 자동으로 주입합니다.
+### 2. 환경 변수 설정
 
-## 포함된 에이전트
+`.env.local` 파일 생성:
 
-| 에이전트 | 설명 |
-|----------|------|
-| `prd-to-roadmap` | `docs/PRD.md`를 분석하여 Agile 기반 `docs/ROADMAP.md`를 생성합니다. Playwright MCP 검증 시나리오를 각 Phase에 포함합니다. |
-| `sprint-planner` | ROADMAP을 기반으로 스프린트 계획을 수립하고 `docs/sprint/sprint{N}.md`에 저장합니다. |
-| `sprint-close` | 스프린트 완료 후 ROADMAP 상태 업데이트, PR 생성, 코드 리뷰, 자동 검증을 순서대로 처리합니다. |
-| `code-reviewer` | 구현 완료된 코드를 계획 문서와 비교하여 Critical/Important/Suggestion 등급으로 이슈를 분류합니다. |
+```bash
+# DB (Turso)
+DATABASE_URL=libsql://your-db.turso.io
+DATABASE_AUTH_TOKEN=your-auth-token
 
-## 포함된 스킬
+# 관리자 인증
+ADMIN_PASSWORD_HASH=<bcrypt 해시>
+JWT_SECRET=<32자 이상 랜덤 문자열>
 
-| 스킬 | 설명 |
-|------|------|
-| `writing-plans` | 기능 구현 전 단계별 실행 계획을 `docs/plans/YYYY-MM-DD-<feature>.md`에 작성합니다. TDD 기반으로 각 태스크를 2~5분 단위로 분해합니다. |
-| `karpathy-guidelines` | 과도한 추상화, 불필요한 기능 추가, 외과적이지 않은 코드 변경을 방지하는 LLM 코딩 가이드라인입니다. |
+# AI 평가
+ANTHROPIC_API_KEY=sk-ant-...
 
-## 스프린트 워크플로우
+# GitHub 데이터 수집
+GITHUB_TOKEN=ghp_...
+
+# 이메일 (Gmail SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your-gmail@gmail.com
+SMTP_PASS=your-app-password
+EMAIL_FROM=해커톤 평가 시스템 <your-gmail@gmail.com>
+
+# 앱 URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+`ADMIN_PASSWORD_HASH` 생성:
+
+```bash
+node -e "const b=require('bcryptjs');console.log(b.hashSync('your-password',10))"
+```
+
+### 3. DB 초기화
+
+```bash
+npx drizzle-kit push        # 스키마 적용
+npx tsx src/db/seed.ts      # 시드 데이터 삽입
+```
+
+### 4. 개발 서버 실행
+
+```bash
+npm run dev
+```
+
+`http://localhost:3000` 접속.
+
+- 참가자 제출: `/submit/session-2026-spring`
+- 참가자 결과 조회: `/check/session-2026-spring`
+- 관리자: `/admin` (비밀번호 입력)
+
+## 프로젝트 구조
+
+```
+src/
+  app/                    # Next.js App Router
+    page.tsx              # 랜딩 페이지
+    submit/[sessionId]/   # 참가자 제출 폼
+    check/[sessionId]/    # 참가자 결과 조회
+    admin/                # 관리자 영역 (인증 가드)
+      dashboard/          # 세션 목록
+      session/[id]/       # 세션 상세 + 행운상 추첨
+        results/          # 결과 대시보드 + 개별 리포트
+    api/                  # API Routes
+  components/             # UI 컴포넌트
+  lib/                    # 비즈니스 로직 (AI 평가, GitHub 수집, 이메일)
+  db/                     # Drizzle 스키마 + 시드
+  types/                  # 공통 타입
+docs/
+  PRD.md                  # 제품 요구사항 문서
+  ROADMAP.md              # 프로젝트 로드맵
+  sprint/                 # 스프린트 계획 및 검증 보고서
+  deploy.md               # 배포 체크리스트
+```
+
+## 배포 (Vercel + Turso)
+
+```bash
+# Turso DB 생성
+turso db create hackathon-eval
+turso db show hackathon-eval --url
+turso db tokens create hackathon-eval
+
+# 스키마 + 시드 적용
+npx drizzle-kit push
+npx tsx src/db/seed.ts
+```
+
+Vercel 대시보드에서 환경변수를 설정하고 GitHub 저장소를 import하여 배포합니다. 자세한 내용은 `docs/deploy.md` 참조.
+
+## 에이전트 & 스킬 워크플로우
+
+이 프로젝트는 Claude Code 에이전트와 스킬을 활용한 스프린트 기반 개발로 구축되었습니다.
 
 ```
 docs/PRD.md
@@ -49,11 +144,16 @@ docs/sprint/sprint{N}.md
     ├─ ROADMAP.md 상태 업데이트
     ├─ sprint{N} → main PR 생성
     ├─ code-reviewer subagent 코드 리뷰
-    ├─ Playwright MCP 자동 검증
     └─ docs/sprint/sprint{N}/playwright-report.md 저장
 ```
 
-## 전제 조건
+`.claude/` 디렉토리를 다른 프로젝트에 복사하면 동일한 워크플로우를 재사용할 수 있습니다.
 
-- [Claude Code](https://claude.ai/code) 설치
-- Playwright MCP 서버 설정 (UI 자동 검증 사용 시)
+## 데모 계정
+
+| 구분 | 값 |
+|------|-----|
+| 관리자 비밀번호 (시드 기본값) | `admin1234` |
+| 시드 세션 ID | `session-2026-spring` |
+| 평가 완료 참가자 | 이메일: `kimcs@example.com` / 조회비밀번호: `1234` |
+| 일반 참가자 | 이메일: `leeyh@example.com` / 조회비밀번호: `2222` |

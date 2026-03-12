@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 AI-Native 해커톤 평가 시스템. 참가자 제출 → 관리자 AI 자동 평가 → 결과 공개 흐름을 하나의 웹 앱에서 처리한다.
 
-- **기술 스택**: Next.js 15 (App Router) + TypeScript, Tailwind CSS + shadcn/ui, Drizzle ORM + SQLite
+- **기술 스택**: Next.js 16.1.6 (App Router) + TypeScript, Tailwind CSS + shadcn/ui, Drizzle ORM + Turso (libsql)
 - **빌드**: `npm run dev` (개발), `npm run build` (프로덕션)
 - **DB**: `npx drizzle-kit push` (스키마 적용), `npx tsx src/db/seed.ts` (시드 데이터)
 
@@ -25,23 +25,45 @@ src/
     admin/
       layout.tsx   # 관리자 레이아웃 (인증 가드)
       page.tsx     # 관리자 로그인
-      dashboard/page.tsx          # 세션 목록 대시보드
-      session/[sessionId]/page.tsx           # 세션 상세
-      session/[sessionId]/lucky-draw/page.tsx  # 행운상 추첨
-    api/           # API Routes (Phase 2~)
+      dashboard/page.tsx                              # 세션 목록 대시보드
+      session/[sessionId]/page.tsx                    # 세션 상세 (제출 목록)
+      session/[sessionId]/results/page.tsx            # 결과 대시보드 (순위표)
+      session/[sessionId]/results/[submissionId]/page.tsx  # 개별 평가 리포트
+      session/[sessionId]/lucky-draw/page.tsx         # 행운상 추첨
+    api/           # API Routes
+      auth/admin/                  # 관리자 로그인
+      admin/test-email/            # 테스트 이메일 발송
+      sessions/                    # 세션 CRUD
+      sessions/[id]/submissions/   # 제출 생성/조회
+      sessions/[id]/submissions/check/  # 참가자 본인 조회
+      sessions/[id]/submissions/[subId]/  # 제출 수정
+      sessions/[id]/submissions/[subId]/re-evaluate/  # 단건 재평가
+      sessions/[id]/evaluate/      # 일괄 평가 실행
+      sessions/[id]/evaluate/progress/  # 평가 진행률
+      sessions/[id]/evaluate/reset/     # 평가 리셋
+      sessions/[id]/export/csv/    # CSV 내보내기
+      sessions/[id]/lucky-draw/    # 행운상 추첨
+      validate/github-url/         # GitHub URL 검증
   components/
-    ui/            # shadcn/ui 자동 생성 컴포넌트
+    ui/            # shadcn/ui 컴포넌트
     layouts/       # 공통 레이아웃 (header, footer, admin-nav)
     submit/        # 제출 폼 도메인 컴포넌트
     check/         # 확인/결과 도메인 컴포넌트
     admin/         # 관리자 도메인 컴포넌트
   lib/
-    mock-data.ts   # 목업 데이터 (Phase 2에서 API로 교체)
-    utils.ts       # 공통 유틸리티
-    validations.ts # zod 검증 스키마
+    ai-evaluator.ts       # Claude API 평가 로직
+    api-utils.ts          # API 응답 헬퍼
+    auth.ts               # JWT 인증 (클라이언트)
+    auth-server.ts        # JWT 인증 (서버)
+    email-sender.ts       # Gmail SMTP 이메일 발송
+    evaluation-runner.ts  # 평가 오케스트레이션
+    github-collector.ts   # GitHub API 데이터 수집
+    role-criteria.ts      # 직군별 평가 기준 정의
+    utils.ts              # 공통 유틸리티
+    validations.ts        # zod 검증 스키마
   db/
     schema.ts      # Drizzle ORM 스키마
-    index.ts       # DB 연결
+    index.ts       # DB 연결 (Turso libsql)
     seed.ts        # 시드 데이터
     migrations/    # 마이그레이션 파일
   types/
@@ -49,11 +71,12 @@ src/
 docs/
   PRD.md           # 제품 요구사항 문서
   ROADMAP.md       # 프로젝트 로드맵
+  deploy.md        # 배포 체크리스트 (스프린트별)
   sprint/          # 스프린트 문서 및 검증 보고서
     sprint{N}.md
     sprint{N}/     # 스크린샷, Playwright 보고서
 public/
-  screenshots/     # 배포 URL 스크린샷 (Phase 4)
+  screenshots/     # 배포 URL 스크린샷
 README.md
 CLAUDE.md
 ```
