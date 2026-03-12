@@ -1,3 +1,37 @@
+# Sprint 11 배포 체크리스트 — 테스트 이메일 sessionId 수정 + 즉시 결과 확인
+
+## 자동 검증 완료 (2026-03-12)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `src/app/api/admin/test-email/route.ts` — DB 조회로 sessionId 변경, 세션 없을 시 400 반환 확인
+- ✅ `src/app/api/sessions/[id]/submissions/check/route.ts` — `resultsPublished` 조건 제거, `status === "done"`이면 즉시 점수 반환 확인
+- ✅ `src/components/check/submission-detail.tsx` — `resultsPublished` 조건 제거, "결과가 아직 공개되지 않았습니다." 문구 제거 확인
+- ✅ `src/lib/email-sender.ts` — "조회 페이지에서 바로" 문구 변경 확인
+
+## 수동 검증 필요 항목
+
+`npm run dev` 실행 후 브라우저 또는 curl로 확인하세요.
+
+### 1. 테스트 이메일 sessionId 검증
+
+- ⬜ `POST /api/admin/test-email` (인증 후) → 수신 이메일의 "결과 확인하기" URL이 `/check/{실제세션ID}` 형식인지 확인 (이전: `/check/test-session`)
+- ⬜ 세션이 없는 상태에서 테스트 이메일 발송 → 400 에러 + "세션이 없습니다." 메시지 확인
+
+### 2. 즉시 결과 확인 검증
+
+`/check/session-2026-spring` (이메일: `kimcs@example.com`, 조회비밀번호: `1234`):
+
+- ⬜ 결과 공개 토글 비활성 상태에서도 `status === "done"` 참가자에게 즉시 점수 표시 확인
+- ⬜ "결과가 아직 공개되지 않았습니다." 문구가 더 이상 표시되지 않는지 확인
+- ⬜ `status !== "done"` 참가자는 기존과 동일하게 안내 문구 표시 확인
+
+### 3. Vercel 재배포
+
+- ⬜ `sprint11` 브랜치 또는 `main` 머지 후 Vercel 자동 배포 확인
+- ⬜ 배포 환경에서 위 1, 2항 재검증
+
+---
+
 # 이메일 SMTP 전환 — nodemailer + Gmail SMTP
 
 ## 자동 검증 완료 (2026-03-11)
