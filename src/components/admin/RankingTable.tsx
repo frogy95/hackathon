@@ -66,6 +66,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
 
   return (
     <div className="space-y-4">
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -114,6 +115,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">
-            <Shield className="h-8 w-8 text-zinc-700" />
+            <Shield className="h-8 w-8 text-emerald-500" />
           </div>
           <CardTitle>관리자 로그인</CardTitle>
           <CardDescription>관리자 비밀번호를 입력하여 로그인하세요</CardDescription>

@@ -54,28 +54,36 @@ export default async function LuckyDrawPage({ params }: Props) {
   }));
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <Link
-        href={`/admin/session/${sessionId}`}
-        className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        세션으로 돌아가기
-      </Link>
-
-      <div className="flex items-center gap-3 mb-8">
-        <Gift className="h-6 w-6 text-yellow-500" />
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900">행운상 추첨</h1>
-          <p className="text-sm text-zinc-500">{session.name}</p>
+    <>
+      {/* 다크 밴드 */}
+      <section className="page-header-band">
+        <div className="hero-dots absolute inset-0 pointer-events-none" />
+        <div className="relative mx-auto max-w-4xl px-4 py-8">
+          <Link
+            href={`/admin/session/${sessionId}`}
+            className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white mb-4 w-fit"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            세션으로 돌아가기
+          </Link>
+          <div className="flex items-center gap-3">
+            <Gift className="h-6 w-6 text-emerald-400" />
+            <div>
+              <h1 className="text-2xl font-bold text-white">행운상 추첨</h1>
+              <p className="text-sm text-zinc-400">{session.name}</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <LuckyDrawPageClient
-        sessionId={sessionId}
-        submissions={subList}
-        history={drawHistory}
-      />
-    </div>
+      {/* 콘텐츠 영역 */}
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <LuckyDrawPageClient
+          sessionId={sessionId}
+          submissions={subList}
+          history={drawHistory}
+        />
+      </div>
+    </>
   );
 }

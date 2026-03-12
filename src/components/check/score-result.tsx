@@ -33,7 +33,7 @@ export function ScoreResult({
       {/* 총점 히어로 블록 */}
       <div className="rounded-xl bg-zinc-900 text-white p-6 text-center">
         <p className="text-sm text-zinc-400 mb-1">최종 점수</p>
-        <p className="text-5xl font-bold">{totalScore}</p>
+        <p className="text-3xl sm:text-5xl font-bold text-emerald-400">{totalScore}</p>
         <p className="text-xs text-zinc-500 mt-1">/ 100점</p>
       </div>
 
@@ -66,7 +66,7 @@ export function ScoreResult({
                   </div>
                   <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-zinc-800 rounded-full"
+                      className="h-full bg-emerald-500 rounded-full"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

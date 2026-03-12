@@ -69,30 +69,37 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-900">평가 세션 목록</h1>
-          {!loading && (
-            <p className="text-sm text-zinc-500 mt-1">총 {sessions.length}개 세션</p>
-          )}
+    <>
+      {/* 다크 밴드 */}
+      <section className="page-header-band">
+        <div className="hero-dots absolute inset-0 pointer-events-none" />
+        <div className="relative mx-auto max-w-5xl px-4 py-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">평가 세션 목록</h1>
+            {!loading && (
+              <p className="text-sm text-zinc-400 mt-1">총 {sessions.length}개 세션</p>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* TODO: 임시 테스트 버튼 — 이메일 설정 확인 후 제거 */}
+            <Button variant="outline" size="sm" onClick={handleTestEmail} disabled={sendingTestEmail} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white bg-transparent">
+              <Mail className="h-4 w-4 mr-1.5" />
+              {sendingTestEmail ? "발송 중..." : "테스트 이메일"}
+            </Button>
+            <Button onClick={() => setModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white">
+              <PlusCircle className="h-4 w-4 mr-1.5" />
+              세션 생성
+            </Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-zinc-400 hover:text-white hover:bg-zinc-800">
+              <LogOut className="h-4 w-4 mr-1.5" />
+              로그아웃
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* TODO: 임시 테스트 버튼 — 이메일 설정 확인 후 제거 */}
-          <Button variant="outline" size="sm" onClick={handleTestEmail} disabled={sendingTestEmail}>
-            <Mail className="h-4 w-4 mr-1.5" />
-            {sendingTestEmail ? "발송 중..." : "테스트 이메일"}
-          </Button>
-          <Button onClick={() => setModalOpen(true)}>
-            <PlusCircle className="h-4 w-4 mr-1.5" />
-            세션 생성
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="h-4 w-4 mr-1.5" />
-            로그아웃
-          </Button>
-        </div>
-      </div>
+      </section>
+
+      {/* 콘텐츠 영역 */}
+      <div className="mx-auto max-w-5xl px-4 py-8">
 
       {loading ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -122,6 +129,7 @@ export default function AdminDashboardPage() {
         onClose={() => setModalOpen(false)}
         onCreated={fetchSessions}
       />
-    </div>
+      </div>
+    </>
   );
 }

@@ -58,72 +58,81 @@ export default async function SessionDetailPage({ params }: Props) {
   });
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      {/* 상단 내비게이션 */}
-      <Link
-        href="/admin/dashboard"
-        className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-800 mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        대시보드로 돌아가기
-      </Link>
+    <>
+      {/* 다크 밴드 */}
+      <section className="page-header-band">
+        <div className="hero-dots absolute inset-0 pointer-events-none" />
+        <div className="relative mx-auto max-w-6xl px-4 py-8">
+          {/* 상단 내비게이션 */}
+          <Link
+            href="/admin/dashboard"
+            className="flex items-center gap-1 text-sm text-zinc-400 hover:text-white mb-4 w-fit"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            대시보드로 돌아가기
+          </Link>
 
-      {/* 세션 정보 헤더 */}
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-zinc-900">{session.name}</h1>
-            <Badge
-              variant={
-                status === "active"
-                  ? "success"
-                  : status === "closed"
-                    ? "warning"
-                    : "info"
-              }
-            >
-              {status === "active"
-                ? "진행중"
-                : status === "closed"
-                  ? "마감"
-                  : "결과공개"}
-            </Badge>
+          {/* 세션 정보 헤더 */}
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-white">{session.name}</h1>
+                <Badge
+                  variant={
+                    status === "active"
+                      ? "success"
+                      : status === "closed"
+                        ? "warning"
+                        : "info"
+                  }
+                >
+                  {status === "active"
+                    ? "진행중"
+                    : status === "closed"
+                      ? "마감"
+                      : "결과공개"}
+                </Badge>
+              </div>
+              <p className="text-sm text-zinc-400 mt-1">
+                마감일시: {deadlineStr} · 제출 {subs.length}건
+              </p>
+            </div>
+
+            {/* 액션 버튼 */}
+            <div className="flex flex-wrap items-center gap-2">
+              <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
+              <PublishResultsButton sessionId={sessionId} resultsPublished={session.resultsPublished} />
+              <Link href={`/admin/session/${sessionId}/results`}>
+                <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white bg-transparent">
+                  <BarChart2 className="h-4 w-4 mr-1.5" />
+                  결과 대시보드
+                </Button>
+              </Link>
+              <Link href={`/admin/session/${sessionId}/lucky-draw`}>
+                <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white bg-transparent">
+                  <Gift className="h-4 w-4 mr-1.5" />
+                  행운상 추첨
+                </Button>
+              </Link>
+            </div>
           </div>
-          <p className="text-sm text-zinc-500 mt-1">
-            마감일시: {deadlineStr} · 제출 {subs.length}건
-          </p>
+        </div>
+      </section>
+
+      {/* 콘텐츠 영역 */}
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        {/* AI 평가 컨트롤 카드 */}
+        <div className="mb-6">
+          <EvaluateButton
+            sessionId={sessionId}
+            submissionCount={subs.filter((s) => !s.excluded).length}
+            doneCount={subs.filter((s) => !s.excluded && s.status === "done").length}
+          />
         </div>
 
-        {/* 액션 버튼 */}
-        <div className="flex flex-wrap items-center gap-2">
-          <SessionActions sessionId={sessionId} currentDeadline={session.submissionDeadline} />
-          <PublishResultsButton sessionId={sessionId} resultsPublished={session.resultsPublished} />
-          <Link href={`/admin/session/${sessionId}/results`}>
-            <Button size="sm" variant="outline">
-              <BarChart2 className="h-4 w-4 mr-1.5" />
-              결과 대시보드
-            </Button>
-          </Link>
-          <Link href={`/admin/session/${sessionId}/lucky-draw`}>
-            <Button size="sm" variant="outline">
-              <Gift className="h-4 w-4 mr-1.5" />
-              행운상 추첨
-            </Button>
-          </Link>
-        </div>
+        {/* 제출 현황 테이블 */}
+        <SubmissionTable sessionId={sessionId} submissions={subs} />
       </div>
-
-      {/* AI 평가 컨트롤 카드 */}
-      <div className="mb-6">
-        <EvaluateButton
-          sessionId={sessionId}
-          submissionCount={subs.filter((s) => !s.excluded).length}
-          doneCount={subs.filter((s) => !s.excluded && s.status === "done").length}
-        />
-      </div>
-
-      {/* 제출 현황 테이블 */}
-      <SubmissionTable sessionId={sessionId} submissions={subs} />
-    </div>
+    </>
   );
 }

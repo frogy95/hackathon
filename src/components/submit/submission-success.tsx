@@ -32,7 +32,7 @@ export function SubmissionSuccess({ data, sessionId, submittedAt }: SubmissionSu
       <Card>
         <CardContent className="pt-6 text-left space-y-3">
           <h3 className="font-semibold text-zinc-900 mb-4">제출 내용 요약</h3>
-          <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
             <span className="text-zinc-500 font-medium">이름</span>
             <span className="col-span-2 text-zinc-900">{data.name}</span>
 
@@ -51,7 +51,7 @@ export function SubmissionSuccess({ data, sessionId, submittedAt }: SubmissionSu
                 href={data.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-emerald-600 hover:underline"
               >
                 {data.repoUrl}
               </a>
@@ -65,7 +65,7 @@ export function SubmissionSuccess({ data, sessionId, submittedAt }: SubmissionSu
                     href={data.deployUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-emerald-600 hover:underline"
                   >
                     {data.deployUrl}
                   </a>
@@ -76,7 +76,7 @@ export function SubmissionSuccess({ data, sessionId, submittedAt }: SubmissionSu
         </CardContent>
       </Card>
 
-      <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700">
+      <div className="rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
         자동심사 후, 이메일로 평가내용을 받게됩니다.
       </div>
 

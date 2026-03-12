@@ -43,7 +43,7 @@ export function SubmissionDetail({
           </div>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <span className="text-zinc-500">제출 시각</span>
             <span className="col-span-2">
               {new Date(submission.submittedAt).toLocaleString("ko-KR", {
@@ -61,7 +61,7 @@ export function SubmissionDetail({
                 href={submission.repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-blue-600 hover:underline break-all"
+                className="inline-flex items-center gap-1 text-emerald-600 hover:underline break-all"
               >
                 <Github className="h-3 w-3 flex-shrink-0" />
                 {submission.repoUrl}
@@ -76,7 +76,7 @@ export function SubmissionDetail({
                     href={submission.deployUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline break-all"
+                    className="inline-flex items-center gap-1 text-emerald-600 hover:underline break-all"
                   >
                     <ExternalLink className="h-3 w-3 flex-shrink-0" />
                     {submission.deployUrl}

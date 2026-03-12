@@ -39,42 +39,65 @@ export default async function HomePage() {
   const activeSessions = sessions.filter((s) => s.status === "active");
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 space-y-12">
+    <div className="space-y-12">
       {/* 히어로 섹션 */}
-      <section className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-zinc-900">해커톤 평가 시스템</h1>
-        <p className="text-lg text-zinc-600 max-w-xl mx-auto">
-          유비케어 AI-Native 해커톤
-        </p>
+      <section className="relative bg-zinc-950 overflow-hidden">
+        {/* 도트 패턴 */}
+        <div className="hero-dots absolute inset-0 pointer-events-none" />
+        {/* 장식 글로우 원 — 좌상단 */}
+        <div className="animate-pulse-ring absolute -top-24 -left-24 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+        {/* 장식 글로우 원 — 우하단 */}
+        <div className="animate-pulse-ring absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-emerald-500/8 blur-3xl pointer-events-none" />
+
+        <div className="relative mx-auto max-w-6xl px-4 py-20 text-center space-y-5">
+          <p className="animate-fade-in-up inline-flex items-center gap-2 text-xs font-mono text-emerald-400/70 tracking-widest uppercase border border-emerald-500/20 rounded-full px-3 py-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            AI-Native Hackathon
+          </p>
+          <h1 className="animate-fade-in-up-delay-1 text-4xl sm:text-5xl font-bold tracking-tighter text-white">
+            <span className="text-emerald-400 mr-2 font-mono">&gt;</span>
+            해커톤 평가 시스템
+          </h1>
+          <p className="animate-fade-in-up-delay-2 text-base text-zinc-400 max-w-lg mx-auto">
+            유비케어 AI-Native 해커톤 — AI가 자동으로 제출물을 분석하고 공정하게 평가합니다.
+          </p>
+        </div>
       </section>
 
+      <div className="mx-auto max-w-6xl px-4 space-y-12">
       {/* 기능 소개 */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+        <Card className="border-zinc-800 bg-zinc-950 text-white hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] transition-all duration-200">
           <CardHeader>
-            <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
-            <CardTitle>간편한 제출</CardTitle>
-            <CardDescription>
+            <div className="bg-emerald-500/10 rounded-full p-2 w-fit mb-2">
+              <CheckCircle className="h-8 w-8 text-emerald-400" />
+            </div>
+            <CardTitle className="text-white">간편한 제출</CardTitle>
+            <CardDescription className="text-zinc-400">
               이름, 이메일, GitHub URL만 입력하면 제출 완료. 마감 카운트다운으로 시간을 확인하세요.
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card>
+        <Card className="border-zinc-800 bg-zinc-950 text-white hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] transition-all duration-200">
           <CardHeader>
-            <BarChart3 className="h-8 w-8 text-blue-500 mb-2" />
-            <CardTitle>AI 자동 평가</CardTitle>
-            <CardDescription>
+            <div className="bg-emerald-500/10 rounded-full p-2 w-fit mb-2">
+              <BarChart3 className="h-8 w-8 text-emerald-400" />
+            </div>
+            <CardTitle className="text-white">AI 자동 평가</CardTitle>
+            <CardDescription className="text-zinc-400">
               제출된 저장소와 배포 URL을 AI가 자동으로 분석하여 항목별 점수와 근거를 제공합니다.
             </CardDescription>
           </CardHeader>
         </Card>
 
-        <Card>
+        <Card className="border-zinc-800 bg-zinc-950 text-white hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.1)] transition-all duration-200">
           <CardHeader>
-            <Clock className="h-8 w-8 text-amber-500 mb-2" />
-            <CardTitle>실시간 결과 조회</CardTitle>
-            <CardDescription>
+            <div className="bg-emerald-500/10 rounded-full p-2 w-fit mb-2">
+              <Clock className="h-8 w-8 text-emerald-400" />
+            </div>
+            <CardTitle className="text-white">실시간 결과 조회</CardTitle>
+            <CardDescription className="text-zinc-400">
               이름과 이메일로 언제든지 제출 상태와 평가 결과를 확인할 수 있습니다.
             </CardDescription>
           </CardHeader>
@@ -96,7 +119,7 @@ export default async function HomePage() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {sessions.map((session) => (
-              <Card key={session.id} className="border-zinc-200">
+              <Card key={session.id} className="border-zinc-200 hover:shadow-md transition-shadow duration-200">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="text-base">{session.name}</CardTitle>
@@ -149,6 +172,7 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+      </div>
     </div>
   );
 }

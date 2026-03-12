@@ -132,7 +132,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <SubmissionFilters
           statusFilter={statusFilter}
           searchQuery={searchQuery}
@@ -143,6 +143,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
         <Button
           variant="outline"
           size="sm"
+          className="sm:w-auto w-full"
           onClick={() => {
             window.location.href = `/api/sessions/${sessionId}/export/csv`;
           }}
@@ -152,6 +153,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
         </Button>
       </div>
 
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -198,6 +200,7 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }
