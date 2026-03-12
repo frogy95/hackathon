@@ -106,14 +106,14 @@ export function SubmissionDetail({
       </Card>
 
       {/* 평가 결과 */}
-      {resultsPublished && submission.status === "done" && criteriaConfig &&
+      {submission.status === "done" && criteriaConfig &&
         submission.totalScore !== null ? (
         <ScoreResult
           scores={scores}
           totalScore={submission.totalScore}
           criteriaConfig={criteriaConfig}
         />
-      ) : resultsPublished && submission.status === "done" ? (
+      ) : submission.status === "done" ? (
         <Card>
           <CardContent className="pt-6 text-center text-zinc-500">
             평가 결과를 불러올 수 없습니다.
@@ -122,13 +122,11 @@ export function SubmissionDetail({
       ) : (
         <Card>
           <CardContent className="pt-6 text-center text-zinc-500">
-            {!resultsPublished
-              ? "결과가 아직 공개되지 않았습니다."
-              : submission.status === "evaluating"
-                ? "현재 평가가 진행 중입니다. 잠시 후 다시 확인해주세요."
-                : submission.status === "error"
-                  ? "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다."
-                  : "평가가 아직 시작되지 않았습니다."}
+            {submission.status === "evaluating"
+              ? "현재 평가가 진행 중입니다. 잠시 후 다시 확인해주세요."
+              : submission.status === "error"
+                ? "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다."
+                : "평가가 아직 시작되지 않았습니다."}
           </CardContent>
         </Card>
       )}

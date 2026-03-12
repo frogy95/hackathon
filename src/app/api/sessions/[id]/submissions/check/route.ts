@@ -49,9 +49,9 @@ export async function GET(request: NextRequest, context: Context) {
     return apiError(ErrorCode.NOT_FOUND.code, "제출 내역을 찾을 수 없습니다.", ErrorCode.NOT_FOUND.status);
   }
 
-  // 결과 공개 + 평가 완료일 때만 점수 포함
+  // 평가 완료일 때 즉시 점수 포함 (결과 공개 여부 무관)
   let scoreData: typeof scores.$inferSelect[] = [];
-  if (session.resultsPublished && sub.status === "done") {
+  if (sub.status === "done") {
     scoreData = await db
       .select()
       .from(scores)
