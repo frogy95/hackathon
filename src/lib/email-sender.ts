@@ -1,17 +1,21 @@
-// Resend 기반 이메일 발송 모듈
-import { Resend } from "resend";
+// nodemailer + Gmail SMTP 기반 이메일 발송 모듈
+import nodemailer from "nodemailer";
 import type { JobRole } from "@/types";
 
 // 런타임 시점에 지연 초기화 (빌드 시 환경 변수 없어도 오류 없음)
-function getResend(): Resend {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY가 설정되지 않았습니다.");
-  }
-  return new Resend(apiKey);
+function getTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST ?? "smtp.gmail.com",
+    port: Number(process.env.SMTP_PORT ?? "465"),
+    secure: true,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
 }
 
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "최지선 <frogy95@ubcare.co.kr>";
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "해커톤 평가 시스템 <noreply@example.com>";
 
 interface EvaluationResultEmailPayload {
   to: string;
@@ -104,18 +108,14 @@ export async function sendEvaluationResultEmail(
 </html>
   `.trim();
 
-  const resend = getResend();
+  const transporter = getTransporter();
 
-  const { error } = await resend.emails.send({
+  await transporter.sendMail({
     from: EMAIL_FROM,
     to,
     subject,
     html,
   });
-
-  if (error) {
-    throw new Error(`이메일 발송 실패 (${to}): ${error.message}`);
-  }
 
   console.log(`[이메일] 평가 결과 발송 완료: ${to}`);
 }

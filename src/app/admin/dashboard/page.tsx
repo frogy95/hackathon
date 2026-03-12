@@ -7,7 +7,8 @@ import { SessionCard } from "@/components/admin/SessionCard";
 import { CreateSessionModal } from "@/components/admin/CreateSessionModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { clearAdminAuth } from "@/lib/auth";
-import { PlusCircle, LogOut } from "lucide-react";
+import { toast } from "sonner";
+import { PlusCircle, LogOut, Mail } from "lucide-react";
 
 interface SessionItem {
   id: string;
@@ -25,6 +26,7 @@ export default function AdminDashboardPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     setLoading(true);
@@ -44,6 +46,23 @@ export default function AdminDashboardPage() {
     fetchSessions();
   }, [fetchSessions]);
 
+  const handleTestEmail = async () => {
+    setSendingTestEmail(true);
+    try {
+      const res = await fetch("/api/admin/test-email", { method: "POST" });
+      const json = await res.json();
+      if (res.ok) {
+        toast.success("테스트 이메일 발송 완료 (frogy95@ubcare.co.kr)");
+      } else {
+        toast.error(`발송 실패: ${json.error?.message ?? "알 수 없는 오류"}`);
+      }
+    } catch {
+      toast.error("네트워크 오류");
+    } finally {
+      setSendingTestEmail(false);
+    }
+  };
+
   const handleLogout = async () => {
     await clearAdminAuth();
     router.push("/admin");
@@ -59,6 +78,11 @@ export default function AdminDashboardPage() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          {/* TODO: 임시 테스트 버튼 — 이메일 설정 확인 후 제거 */}
+          <Button variant="outline" size="sm" onClick={handleTestEmail} disabled={sendingTestEmail}>
+            <Mail className="h-4 w-4 mr-1.5" />
+            {sendingTestEmail ? "발송 중..." : "테스트 이메일"}
+          </Button>
           <Button onClick={() => setModalOpen(true)}>
             <PlusCircle className="h-4 w-4 mr-1.5" />
             세션 생성

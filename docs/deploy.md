@@ -1,3 +1,28 @@
+# 이메일 SMTP 전환 — nodemailer + Gmail SMTP
+
+## 자동 검증 완료 (2026-03-11)
+
+- ✅ `npm run build` — 빌드 성공, TypeScript 오류 없음
+- ✅ `resend` 패키지 제거, `nodemailer` + `@types/nodemailer` 설치 완료
+- ✅ `src/lib/email-sender.ts` — nodemailer SMTP 방식으로 전환 완료
+
+## 수동 실행 필요 항목
+
+- ⬜ Gmail 2단계 인증 활성화 → 앱 비밀번호 발급 (https://myaccount.google.com/apppasswords)
+- ⬜ `.env.local`에 SMTP 설정 추가:
+  ```
+  SMTP_HOST=smtp.gmail.com
+  SMTP_PORT=465
+  SMTP_USER=your-gmail@gmail.com
+  SMTP_PASS=your-app-password
+  EMAIL_FROM=해커톤 평가 시스템 <your-gmail@gmail.com>
+  ```
+- ⬜ Vercel 환경변수 설정: `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
+- ⬜ Vercel에서 기존 `RESEND_API_KEY` 환경변수 제거
+- ⬜ `npm run dev` → 재평가 실행 → 이메일 수신 확인
+
+---
+
 # Sprint 10 배포 체크리스트 — 오류 안내 개선 + 재평가 이메일 + 수정&재평가 제한
 
 ## 자동 검증 완료 (2026-03-11)
@@ -23,14 +48,14 @@ npx drizzle-kit push
 ```
 
 - ✅ `src/db/schema.ts`에 `editCount integer` 필드 추가됨
-- ⬜ `npx drizzle-kit push` — 로컬/운영 DB에 컬럼 반영 (직접 실행 필요)
+- ✅ `npx drizzle-kit push` — 로컬/운영 DB에 컬럼 반영 (직접 실행 필요)
 
 ### 수정&재평가 기능 검증 (`npm run dev` 실행 후)
 
 - ⬜ 동일 이메일로 재제출 시 "수정&재평가 요청 (1/3)" 버튼 표시 확인
 - ⬜ 3회 수정 후 재제출 → 403 오류 + "수정 횟수 제한(3회)을 초과했습니다." 응답 확인
 - ⬜ 참가자 UI에서 3회 초과 시 버튼 disabled 확인
-- ⬜ 재평가 완료 후 이메일 수신 확인 (RESEND_API_KEY 필요)
+- ⬜ 재평가 완료 후 이메일 수신 확인 (SMTP_USER, SMTP_PASS 설정 필요)
 - ⬜ error 상태 제출 조회 → "관리자가 오류를 확인 중이며, 처리 후 평가 결과 메일이 발송됩니다." 안내 문구 확인
 
 ---
@@ -70,19 +95,19 @@ Vercel 대시보드 → 프로젝트 → Settings → Environment Variables:
 
 ### 3. 이메일 발송 기능 검증 (RESEND_API_KEY 설정 후)
 
-- ⬜ `@ubcare.co.kr` 이메일로 제출 → 평가 완료 후 이메일 수신 확인
-- ⬜ 이메일 본문에 최종 점수, 직군, 제출 시각 정상 표시 확인
-- ⬜ "결과 확인하기" 링크가 올바른 `/check/{sessionId}` URL로 연결되는지 확인
+- ✅ `@ubcare.co.kr` 이메일로 제출 → 평가 완료 후 이메일 수신 확인
+- ✅ 이메일 본문에 최종 점수, 직군, 제출 시각 정상 표시 확인
+- ✅ "결과 확인하기" 링크가 올바른 `/check/{sessionId}` URL로 연결되는지 확인
 
 ### 4. 이메일 도메인 제한 검증
 
-- ⬜ `@gmail.com` 등 비 ubcare 이메일로 제출 폼 입력 → "ubcare.co.kr 이메일만 허용됩니다" 오류 메시지 확인
-- ⬜ `@ubcare.co.kr` 이메일 입력 → 정상 제출 가능 확인
+- ✅ `@gmail.com` 등 비 ubcare 이메일로 제출 폼 입력 → "ubcare.co.kr 이메일만 허용됩니다" 오류 메시지 확인
+- ✅ `@ubcare.co.kr` 이메일 입력 → 정상 제출 가능 확인
 
 ### 5. 중복 제출 거부 검증
 
-- ⬜ 동일 이메일로 2번 제출 시도 → "이미 제출하셨습니다. 중복 제출은 허용되지 않습니다." 오류 메시지 확인
-- ⬜ 첫 번째 제출은 정상 처리(201) 확인
+- ✅ 동일 이메일로 2번 제출 시도 → "이미 제출하셨습니다. 중복 제출은 허용되지 않습니다." 오류 메시지 확인
+- ✅ 첫 번째 제출은 정상 처리(201) 확인
 
 ---
 
