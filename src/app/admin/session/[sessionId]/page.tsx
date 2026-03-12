@@ -50,6 +50,7 @@ export default async function SessionDetailPage({ params }: Props) {
       : "active";
 
   const deadlineStr = deadline.toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

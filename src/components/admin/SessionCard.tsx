@@ -32,13 +32,14 @@ export function SessionCard({
 }: SessionCardProps) {
   const { label, variant } = statusConfig[status];
   const deadline = new Date(submissionDeadline).toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
   });
-  const created = new Date(createdAt).toLocaleDateString("ko-KR");
+  const created = new Date(createdAt).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" });
 
   return (
     <Link href={`/admin/session/${id}`}>

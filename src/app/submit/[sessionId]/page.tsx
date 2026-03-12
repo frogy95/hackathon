@@ -38,6 +38,7 @@ export default async function SubmitPage({ params }: SubmitPageProps) {
               <Calendar className="h-4 w-4 text-emerald-400" />
               마감:{" "}
               {new Date(session.submissionDeadline).toLocaleString("ko-KR", {
+                timeZone: "Asia/Seoul",
                 year: "numeric",
                 month: "long",
                 day: "numeric",

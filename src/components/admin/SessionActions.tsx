@@ -19,12 +19,24 @@ interface SessionActionsProps {
   currentDeadline: string; // ISO 8601
 }
 
+// UTC ISO → KST 기준 datetime-local 문자열 (YYYY-MM-DDTHH:mm)
+function toKSTLocalString(iso: string): string {
+  const d = new Date(iso);
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 16);
+}
+
+// datetime-local 입력값(KST 기준)을 UTC ISO 문자열로 변환
+function fromKSTLocalString(local: string): string {
+  return new Date(local + ":00+09:00").toISOString();
+}
+
 export function SessionActions({ sessionId, currentDeadline }: SessionActionsProps) {
   const router = useRouter();
   const [extendOpen, setExtendOpen] = useState(false);
   const [newDeadline, setNewDeadline] = useState(
-    // datetime-local 형식으로 변환
-    new Date(currentDeadline).toISOString().slice(0, 16)
+    // datetime-local 형식으로 변환 (KST 기준)
+    toKSTLocalString(currentDeadline)
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,7 +47,7 @@ export function SessionActions({ sessionId, currentDeadline }: SessionActionsPro
     const res = await fetch(`/api/sessions/${sessionId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ submissionDeadline: new Date(newDeadline).toISOString() }),
+      body: JSON.stringify({ submissionDeadline: fromKSTLocalString(newDeadline) }),
     });
     setLoading(false);
     if (!res.ok) {

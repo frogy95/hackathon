@@ -146,6 +146,7 @@ export default async function HomePage() {
                     <Calendar className="h-3.5 w-3.5" />
                     마감:{" "}
                     {session.deadline.toLocaleString("ko-KR", {
+                      timeZone: "Asia/Seoul",
                       year: "numeric",
                       month: "long",
                       day: "numeric",
