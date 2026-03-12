@@ -21,7 +21,9 @@ export function SubmitPageClient({ sessionId, isExpired }: SubmitPageClientProps
         <CardHeader>
           <CardTitle>제출하기</CardTitle>
           <CardDescription>
-            GitHub 저장소 URL은 필수입니다. 배포 URL이 있으면 추가 점수를 받을 수 있습니다.
+            GitHub 저장소 URL은 필수입니다. 배포 URL이 있으면 추가 점수를 받을 수 있습니다.<br />
+            이번 해커톤 기간에 착수한 산출물을 올려주세요.<br />
+            기재사항 변경사항 없이 재-제출하더라도 현재 Git저장소의 최신 소스로 재평가 합니다.
           </CardDescription>
         </CardHeader>
         <CardContent>

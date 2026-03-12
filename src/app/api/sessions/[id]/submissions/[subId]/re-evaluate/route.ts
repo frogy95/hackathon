@@ -25,6 +25,11 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
     return apiError(ErrorCode.NOT_FOUND.code, "제출을 찾을 수 없습니다.", ErrorCode.NOT_FOUND.status);
   }
 
+  // 이미 평가 진행 중인 경우 중복 실행 방지
+  if (submission.status === "collecting" || submission.status === "evaluating") {
+    return apiError("EVALUATION_IN_PROGRESS", "이미 평가가 진행 중입니다.", 409);
+  }
+
   // 기존 점수 삭제
   await db.delete(scores).where(eq(scores.submissionId, submissionId));
 

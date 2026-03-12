@@ -1,7 +1,7 @@
 // POST /api/sessions/[id]/evaluate — 일괄 평가 시작 (done 제외)
 import { NextRequest } from "next/server";
 import { waitUntil } from "@vercel/functions";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, notInArray } from "drizzle-orm";
 import { db } from "@/db";
 import { evaluationSessions, submissions } from "@/db/schema";
 import { apiSuccess, apiError, ErrorCode, withAdminAuth } from "@/lib/api-utils";
@@ -34,7 +34,7 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
     // body 없음 — 무시
   }
 
-  // 비제외 + done이 아닌 제출 목록 조회
+  // 비제외 + done/collecting/evaluating이 아닌 제출 목록 조회 (진행 중인 건 건너뜀)
   const targets = await db
     .select()
     .from(submissions)
@@ -42,19 +42,19 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
       and(
         eq(submissions.sessionId, id),
         eq(submissions.excluded, false),
-        ne(submissions.status, "done")
+        notInArray(submissions.status, ["done", "collecting", "evaluating"])
       )
     );
 
   if (targets.length === 0) {
     return apiError(
       "NO_PENDING_SUBMISSIONS",
-      "평가할 제출이 없습니다. (모든 제출이 완료되었거나 없습니다)",
+      "평가할 제출이 없습니다. (모든 제출이 완료되었거나 진행 중입니다)",
       400
     );
   }
 
-  // 평가 대상 상태를 submitted으로 리셋 (error/collecting/evaluating 건 재시도 가능)
+  // 평가 대상 상태를 submitted으로 리셋 (error 건 재시도 가능)
   const targetIds = targets.map((s) => s.id);
   await db
     .update(submissions)
@@ -63,7 +63,7 @@ export const POST = withAdminAuth(async (request: NextRequest, context: unknown)
       and(
         eq(submissions.sessionId, id),
         eq(submissions.excluded, false),
-        ne(submissions.status, "done")
+        notInArray(submissions.status, ["done", "collecting", "evaluating"])
       )
     );
 

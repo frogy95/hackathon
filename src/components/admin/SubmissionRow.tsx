@@ -96,6 +96,7 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onDel
   };
 
   const showReEvalButton = submission.status === "error" || submission.status === "done";
+  const isEvaluating = submission.status === "collecting" || submission.status === "evaluating";
 
   return (
     <TableRow className={submission.excluded ? "bg-zinc-100 opacity-60" : ""}>
@@ -175,6 +176,11 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onDel
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
+          {isEvaluating && (
+            <span className="flex items-center h-7 px-2" title="평가 진행 중">
+              <Loader2 className="h-3 w-3 animate-spin text-zinc-400" />
+            </span>
+          )}
           {showReEvalButton && (
             <Button
               size="sm"
