@@ -86,13 +86,13 @@ export function SubmissionDetail({
             )}
           </div>
 
-          {/* 마감 전이면 수정&재평가 요청 버튼 (최대 3회) */}
+          {/* 마감 전이면 수정&재평가 요청 버튼 (최대 5회) */}
           {!isDeadlinePassed && (
             <div className="pt-2">
-              {submission.editCount < 3 ? (
+              {submission.editCount < 5 ? (
                 <Button variant="outline" size="sm" asChild>
                   <Link href={`/submit/${sessionId}?email=${encodeURIComponent(submission.email)}&checkPassword=${encodeURIComponent(submission.checkPassword)}`}>
-                    수정&amp;재평가 요청 ({submission.editCount}/3)
+                    수정&amp;재평가 요청 ({submission.editCount}/5)
                   </Link>
                 </Button>
               ) : (

@@ -105,9 +105,9 @@ export async function POST(request: NextRequest, context: Context) {
     .then((r) => r[0]);
 
   if (existing) {
-    // 수정 횟수 제한 확인 (최대 3회)
-    if ((existing.editCount ?? 0) >= 3) {
-      return apiError("EDIT_LIMIT_EXCEEDED", "수정 횟수 제한(3회)을 초과했습니다.", 403);
+    // 수정 횟수 제한 확인 (최대 5회)
+    if ((existing.editCount ?? 0) >= 5) {
+      return apiError("EDIT_LIMIT_EXCEEDED", "수정 횟수 제한(5회)을 초과했습니다.", 403);
     }
 
     const now = new Date().toISOString();
