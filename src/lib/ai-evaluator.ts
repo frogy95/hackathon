@@ -60,8 +60,28 @@ ${categoriesJson}
 주의사항:
 - total_score = base_score = 모든 categories의 score 합산 (최대 ${totalMax})
 - 각 category의 score = 해당 sub_items의 score 합산
-- reasoning은 "파일명: 한 줄 요약" 형식으로 간결하게 작성하라 (증거 없으면 "해당 내용 없음")
-- 모든 문자열 값에서 따옴표는 \\", 개행은 \\n, 백슬래시는 \\\\로 이스케이프하라`;
+- reasoning은 다음 형식으로 작성하라:
+  - 구체적인 파일명, 코드 위치, 문서 내용을 인용하여 판단 근거를 2-3문장으로 서술하라.
+  - 강점이 있다면 구체적으로 언급하고, 부족한 점이 있다면 어떤 부분이 보완되면 좋을지 한 줄로 제안하라.
+  - 증거를 찾을 수 없으면 "해당 항목과 관련된 내용을 저장소에서 확인할 수 없음"으로 작성하라.
+- 모든 문자열 값에서 따옴표는 \\", 개행은 \\n, 백슬래시는 \\\\로 이스케이프하라
+
+## 채점 가이드라인
+
+이것은 1-2일 단기 해커톤("Claude Code를 활용한 AI-Native 개발 입문") 산출물입니다.
+프로덕션 수준의 완성도보다 핵심 아이디어의 구현과 AI 도구 활용 역량을 중점적으로 평가하십시오.
+
+### 점수 구간 기준
+- 0점: 해당 항목과 관련된 내용이 저장소에 전혀 존재하지 않을 때만 0점을 부여하라.
+- 1-40%: 형식적 수준의 시도만 존재하거나 내용이 매우 부족함.
+- 41-70%: 기본적인 구현/문서화가 되어 있으나 깊이가 부족하거나 개선 여지가 큼.
+- 71-90%: 해커톤 맥락에서 합리적이고 충실한 수준. 대부분의 기대 요소를 충족함.
+- 91-100%: 해커톤 수준을 상회하는 우수한 품질. 만점은 프로덕션 레벨이 아닌 해커톤 최고 수준 기준.
+
+### 채점 원칙
+- 각 서브 항목은 독립적으로 채점하라. 다른 항목의 점수에 영향받지 마라.
+- 저장소에서 확인할 수 있는 증거에 기반하여 채점하라. 추측하지 마라.
+- AI 컨텍스트 파일(CLAUDE.md, .cursorrules, .claude/ 디렉토리)은 AI-Native 개발의 핵심 지표로 중요하게 평가하라.`;
 }
 
 // CollectedData를 구조화된 텍스트로 변환
@@ -114,6 +134,22 @@ ${treeLines.join("\n")}`);
       .join("\n\n");
     sections.push(`## 소스 파일\n${sourceSection}`);
   }
+
+  // AI 활용 시그널 섹션
+  const allPaths = data.tree.map((f) => f.path);
+  const aiFiles = allPaths.filter((p) =>
+    p === ".cursorrules" ||
+    p === ".cursorignore" ||
+    p === "CLAUDE.md" ||
+    p.startsWith(".claude/")
+  );
+  const hasClaudeDir = allPaths.some((p) => p.startsWith(".claude/"));
+  const { aiCoAuthoredCount, uniqueAuthors, totalCount } = data.commitSummary;
+  sections.push(`## AI 활용 시그널
+- AI Co-Authored 커밋: ${aiCoAuthoredCount ?? 0}/${totalCount}개
+- 고유 커밋 작성자 수: ${uniqueAuthors ?? 1}명
+- .claude/ 디렉토리 존재 여부: ${hasClaudeDir ? "있음" : "없음"}
+- AI 관련 파일 목록: ${aiFiles.length > 0 ? aiFiles.join(", ") : "없음"}`);
 
   return sections.join("\n\n---\n\n");
 }

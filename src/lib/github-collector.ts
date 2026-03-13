@@ -22,6 +22,10 @@ const CONFIG_FILES = [
   "tsconfig.json",
   "vite.config.ts",
   "vite.config.js",
+  // AI 도구 설정 파일
+  ".cursorrules",
+  ".cursorignore",
+  ".claude/settings.json",
 ];
 
 const MAX_LINES_PER_FILE = 500;
@@ -177,11 +181,25 @@ export async function collectGitHubData(repoUrl: string): Promise<CollectedData>
     const commitsResponse = await withRetry(() =>
       octokit.repos.listCommits({ owner, repo, per_page: 50 })
     );
+    const commits = commitsResponse.data;
+
+    // AI Co-Authored 커밋 카운트 (커밋 메시지 전체에서 Co-Authored-By 패턴 검색)
+    const aiCoAuthoredCount = commits.filter((c) =>
+      /co-authored-by:/i.test(c.commit.message)
+    ).length;
+
+    // 고유 커밋 작성자 수
+    const authorSet = new Set(
+      commits.map((c) => c.author?.login ?? c.commit.author?.name ?? "unknown")
+    );
+
     commitSummary = {
-      totalCount: commitsResponse.data.length, // 정확한 전체 카운트는 추가 API 필요
-      recentMessages: commitsResponse.data.map(
+      totalCount: commits.length, // 정확한 전체 카운트는 추가 API 필요
+      recentMessages: commits.map(
         (c) => c.commit.message.split("\n")[0] // 첫 줄만
       ),
+      aiCoAuthoredCount,
+      uniqueAuthors: authorSet.size,
     };
   } catch {
     console.warn("커밋 이력 수집 실패 (무시하고 계속 진행)");

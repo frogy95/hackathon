@@ -16,6 +16,8 @@ export interface FileContent {
 export interface CommitSummary {
   totalCount: number;
   recentMessages: string[]; // 최근 50개 커밋 메시지
+  aiCoAuthoredCount?: number; // Co-Authored-By 포함 커밋 수 (AI 페어 프로그래밍 지표)
+  uniqueAuthors?: number;     // 고유 커밋 작성자 수
 }
 
 export interface CollectedData {

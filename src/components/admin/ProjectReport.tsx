@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadarChart } from "@/components/ui/radar-chart";
 import { normalizeReasoning } from "@/lib/utils";
+import { ROLE_CRITERIA } from "@/lib/role-criteria";
 import { ExternalLink, Github } from "lucide-react";
 import type { JobRole } from "@/types";
 
@@ -20,42 +21,16 @@ interface ProjectReportData {
   totalScore: number;
 }
 
-// 직군별 평가 기준 라벨 및 만점 정의
-const ROLE_CRITERIA_LABELS: Record<JobRole, Record<string, { label: string; max: number }>> = {
-  "PM/기획": {
-    documentation: { label: "AI-Native 문서화 체계", max: 40 },
-    implementation: { label: "기술 구현력", max: 10 },
-    ux: { label: "완성도 및 UX", max: 20 },
-    idea: { label: "아이디어 및 활용 가치", max: 20 },
-    verification_plan: { label: "검증 계획", max: 10 },
-  },
-  "개발": {
-    documentation: { label: "AI-Native 문서화 체계", max: 30 },
-    implementation: { label: "기술 구현력", max: 30 },
-    ux: { label: "완성도 및 UX", max: 15 },
-    idea: { label: "아이디어 및 활용 가치", max: 10 },
-    verification_plan: { label: "검증 계획", max: 15 },
-  },
-  "디자인": {
-    documentation: { label: "AI-Native 문서화 체계", max: 20 },
-    implementation: { label: "기술 구현력", max: 10 },
-    ux: { label: "완성도 및 UX", max: 20 },
-    idea: { label: "아이디어 및 활용 가치", max: 10 },
-    design_system: { label: "디자인 시스템", max: 30 },
-    verification_plan: { label: "검증 계획", max: 10 },
-  },
-  "QA": {
-    documentation: { label: "AI-Native 문서화 체계", max: 30 },
-    implementation: { label: "기술 구현력", max: 10 },
-    ux: { label: "완성도 및 UX", max: 20 },
-    idea: { label: "아이디어 및 활용 가치", max: 10 },
-    verification_plan: { label: "검증 계획", max: 30 },
-  },
-};
-
+// ROLE_CRITERIA에서 동적으로 라벨/만점 매핑 생성
+function getCriteriaLabels(jobRole: JobRole): Record<string, { label: string; max: number }> {
+  const criteria = ROLE_CRITERIA[jobRole] ?? ROLE_CRITERIA["개발"];
+  return Object.fromEntries(
+    criteria.map((c) => [c.key, { label: c.name, max: c.maxScore }])
+  );
+}
 
 export function ProjectReport({ report }: { report: ProjectReportData }) {
-  const criteriaLabels = ROLE_CRITERIA_LABELS[report.jobRole] ?? ROLE_CRITERIA_LABELS["개발"];
+  const criteriaLabels = getCriteriaLabels(report.jobRole);
 
   // 레이더 차트용 데이터: DB에 있는 점수 키와 기준 라벨 매핑
   const radarItems = Object.entries(criteriaLabels)
