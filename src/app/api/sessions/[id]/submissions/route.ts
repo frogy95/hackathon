@@ -95,7 +95,7 @@ export async function POST(request: NextRequest, context: Context) {
   const parsed = await parseBody(request, submissionSchema);
   if ("error" in parsed) return parsed.error;
 
-  const { name, email, repoUrl, deployUrl, jobRole, checkPassword } = parsed.data;
+  const { name, email, repoUrl, deployUrl, jobRole, checkPassword, feedback } = parsed.data;
 
   // 동일 이메일 제출 중복 확인 — 중복이면 409 거부
   const existing = await db
@@ -118,6 +118,7 @@ export async function POST(request: NextRequest, context: Context) {
     // 제출 정보 업데이트
     await db.update(submissions).set({
       name, repoUrl, deployUrl: deployUrl ?? null, jobRole, checkPassword,
+      feedback: feedback ?? null,
       editCount: (existing.editCount ?? 0) + 1,
       status: "submitted",
       totalScore: null, baseScore: null, bonusScore: null,
@@ -150,6 +151,7 @@ export async function POST(request: NextRequest, context: Context) {
     deployUrl: deployUrl ?? null,
     jobRole,
     checkPassword,
+    feedback: feedback ?? null,
     submittedAt: now,
     updatedAt: now,
   });

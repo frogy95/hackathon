@@ -41,6 +41,7 @@ export interface Submission {
   jobRole: JobRole;
   checkPassword: string;
   editCount: number;
+  feedback: string | null;
 }
 
 export interface Score {

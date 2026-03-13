@@ -59,6 +59,7 @@ export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: Submis
             checkPassword: sub.checkPassword ?? "",
             repoUrl: sub.repoUrl ?? "",
             deployUrl: sub.deployUrl ?? "",
+            feedback: sub.feedback ?? "",
           });
           if (sub.jobRole && onJobRoleChange) {
             onJobRoleChange(sub.jobRole);
@@ -72,6 +73,27 @@ export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: Submis
 
   const repoUrl = watch("repoUrl");
   const jobRole = watch("jobRole");
+  const feedback = watch("feedback") ?? "";
+  const FEEDBACK_MAX = 512;
+  const feedbackLen = feedback.length;
+  const feedbackRemaining = FEEDBACK_MAX - feedbackLen;
+  const feedbackProgress = Math.min(feedbackLen / FEEDBACK_MAX, 1);
+  // SVG 원형 프로그레스 설정
+  const circleR = 8;
+  const circleC = 2 * Math.PI * circleR;
+  const circleDash = circleC * feedbackProgress;
+  const feedbackColor =
+    feedbackRemaining < 0
+      ? "text-red-500"
+      : feedbackRemaining <= 20
+        ? "text-amber-500"
+        : "text-zinc-400";
+  const circleColor =
+    feedbackRemaining < 0
+      ? "#ef4444"
+      : feedbackRemaining <= 20
+        ? "#f59e0b"
+        : "#a1a1aa";
 
   // 직군 변경 시 부모에 알림
   useEffect(() => {
@@ -279,6 +301,39 @@ export function SubmissionForm({ sessionId, isExpired, onJobRoleChange }: Submis
           aria-invalid={!!errors.deployUrl}
         />
         {errors.deployUrl && <p className="text-xs text-red-600">{errors.deployUrl.message}</p>}
+      </div>
+
+      {/* 참여 소감 (선택) */}
+      <div className="space-y-1.5">
+        <Label htmlFor="feedback">
+          참여 소감 <span className="text-zinc-400 text-xs">(선택)</span>
+        </Label>
+        <textarea
+          id="feedback"
+          rows={4}
+          placeholder="해커톤에 참여하면서 느낀 점을 자유롭게 적어주세요."
+          {...register("feedback")}
+          aria-invalid={!!errors.feedback}
+          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+        />
+        <div className="flex items-center justify-end gap-1.5">
+          <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0">
+            <circle cx="10" cy="10" r={circleR} fill="none" stroke="#e4e4e7" strokeWidth="2" />
+            <circle
+              cx="10" cy="10" r={circleR}
+              fill="none"
+              stroke={circleColor}
+              strokeWidth="2"
+              strokeDasharray={`${circleDash} ${circleC}`}
+              strokeLinecap="round"
+              transform="rotate(-90 10 10)"
+            />
+          </svg>
+          <span className={`text-xs tabular-nums ${feedbackColor}`}>
+            {feedbackLen}/{FEEDBACK_MAX}
+          </span>
+        </div>
+        {errors.feedback && <p className="text-xs text-red-600">{errors.feedback.message}</p>}
       </div>
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>

@@ -24,6 +24,7 @@ export const submissionSchema = z.object({
       (val) => !val || val === "" || /^https?:\/\/.+/.test(val),
       "올바른 URL 형식을 입력해주세요. (예: https://my-app.vercel.app)"
     ),
+  feedback: z.string().max(512, "참여 소감은 512자 이내로 입력해주세요.").optional(),
 });
 
 export type SubmissionFormData = z.infer<typeof submissionSchema>;

@@ -40,6 +40,7 @@ export const submissions = sqliteTable("submissions", {
   checkPassword: text("check_password").notNull().default("0000"), // 숫자 4자리
   errorMessage: text("error_message"), // 평가 오류 메시지 (nullable)
   editCount: integer("edit_count").notNull().default(0), // 수정&재평가 요청 횟수
+  feedback: text("feedback"), // 참여 소감 (nullable, 512자 이내)
 }, (t) => ({
   sessionIdIdx: index("submissions_session_id_idx").on(t.sessionId),
   emailIdx: index("submissions_email_idx").on(t.email),
