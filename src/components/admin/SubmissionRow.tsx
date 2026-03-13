@@ -5,8 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { ExternalLink, Pencil, Check, Loader2, RefreshCw, AlertCircle, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Check, Loader2, RefreshCw, AlertCircle, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { SubmissionStatus } from "@/types";
 
 interface SubmissionRowData {
@@ -21,6 +28,7 @@ interface SubmissionRowData {
   adminNote: string | null;
   errorMessage: string | null;
   jobRole?: string | null;
+  feedback?: string | null;
   sessionId: string;
 }
 
@@ -46,6 +54,7 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onDel
   const [noteLoading, setNoteLoading] = useState(false);
   const [reEvalLoading, setReEvalLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const { label, variant } = statusConfig[submission.status];
   const submittedAt = new Date(submission.submittedAt).toLocaleString("ko-KR", {
@@ -172,6 +181,34 @@ export function SubmissionRow({ submission, onToggleExclude, onUpdateNote, onDel
             <span className="truncate">{noteValue || "메모 추가"}</span>
             <Pencil className="h-3 w-3 shrink-0 opacity-50" />
           </button>
+        )}
+      </TableCell>
+      <TableCell>
+        {submission.feedback ? (
+          <>
+            <button
+              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-blue-600"
+              onClick={() => setFeedbackOpen(true)}
+              title="소감 보기"
+            >
+              <MessageSquare className="h-4 w-4" />
+            </button>
+            <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>참여 소감 — {submission.name}</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm whitespace-pre-wrap text-zinc-700 leading-relaxed">
+                  {submission.feedback}
+                </p>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setFeedbackOpen(false)}>닫기</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        ) : (
+          <span className="text-xs text-zinc-400">—</span>
         )}
       </TableCell>
       <TableCell>

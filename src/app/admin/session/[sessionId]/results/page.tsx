@@ -64,18 +64,18 @@ export default async function ResultsPage({ params }: Props) {
   let columns: { key: string; label: string; max: number }[];
 
   if (jobRoles.length === 1) {
-    // 단일 직군 — 해당 직군의 모든 기준 표시
+    // 단일 직군 — 해당 직군의 모든 기준 표시 (max 비표시)
     const criteria = ROLE_CRITERIA[jobRoles[0]];
-    columns = criteria.map((c) => ({ key: c.key, label: c.name, max: c.maxScore }));
+    columns = criteria.map((c) => ({ key: c.key, label: c.name, max: 0 }));
   } else {
-    // 혼합 직군 — 공통 기준 키만 표시 (모든 직군에 존재하는 키)
-    const commonKeys = ["documentation", "implementation", "ux", "idea", "verification_plan"];
-    // 공통 기준의 label/max는 "개발" 직군 기준으로 표시
-    const devCriteria = ROLE_CRITERIA["개발"];
-    const devMap = Object.fromEntries(devCriteria.map((c) => [c.key, c]));
-    columns = commonKeys
-      .filter((k) => devMap[k])
-      .map((k) => ({ key: k, label: devMap[k].name, max: devMap[k].maxScore }));
+    // 혼합 직군 — 모든 직군의 기준 키를 동적으로 수집 (직군마다 배점 다르므로 max 비표시)
+    const keyLabelMap = new Map<string, string>();
+    for (const criteria of Object.values(ROLE_CRITERIA)) {
+      for (const c of criteria) {
+        if (!keyLabelMap.has(c.key)) keyLabelMap.set(c.key, c.name);
+      }
+    }
+    columns = Array.from(keyLabelMap.entries()).map(([key, label]) => ({ key, label, max: 0 }));
   }
 
   return (

@@ -31,6 +31,7 @@ interface SubmissionData {
   adminNote: string | null;
   errorMessage: string | null;
   jobRole?: string | null;
+  feedback?: string | null;
 }
 
 interface SubmissionTableProps {
@@ -177,13 +178,14 @@ export function SubmissionTable({ sessionId, submissions: initialSubmissions }: 
             </TableHead>
             <TableHead>상태</TableHead>
             <TableHead>메모</TableHead>
+            <TableHead>소감</TableHead>
             <TableHead>관리</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filtered.length === 0 ? (
             <TableRow>
-              <td colSpan={9} className="py-10 text-center text-sm text-zinc-400">
+              <td colSpan={10} className="py-10 text-center text-sm text-zinc-400">
                 검색 결과가 없습니다
               </td>
             </TableRow>

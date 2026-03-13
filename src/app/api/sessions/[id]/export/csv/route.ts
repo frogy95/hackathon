@@ -68,6 +68,7 @@ export const GET = withAdminAuth(async (request: NextRequest, context: unknown) 
     "제출일시",
     "제외여부",
     "관리자메모",
+    "참여 소감",
   ];
 
   // CSV 행 생성 (특수문자 이스케이프)
@@ -99,6 +100,7 @@ export const GET = withAdminAuth(async (request: NextRequest, context: unknown) 
       escape(s.submittedAt),
       escape(s.excluded ? "제외" : ""),
       escape(s.adminNote),
+      escape(s.feedback),
     ].join(",");
   });
 

@@ -11,6 +11,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import { ROLE_CRITERIA } from "@/lib/role-criteria";
 import type { JobRole } from "@/types";
 
 type SortDir = "asc" | "desc";
@@ -44,7 +45,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
   // total 컬럼 포함한 전체 컬럼 목록
   const allColumns: ColumnDef[] = [
     ...columns,
-    { key: "total", label: "총점", max: 100 },
+    { key: "total", label: "총점", max: 0 },
   ];
 
   const sorted = useMemo(() => {
@@ -94,7 +95,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
               >
                 <span className="flex items-center justify-end gap-1">
                   {label}
-                  <span className="text-zinc-400 font-normal text-xs">/{max}</span>
+                  {max > 0 && <span className="text-zinc-400 font-normal text-xs">/{max}</span>}
                   {sortKey === key ? (
                     sortDir === "desc" ? (
                       <ChevronDown className="h-3.5 w-3.5" />
@@ -119,11 +120,14 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
                   {entry.name}
                 </Link>
               </TableCell>
-              {columns.map(({ key }) => (
-                <TableCell key={key} className="text-right">
-                  {entry.scores[key] ?? 0}
-                </TableCell>
-              ))}
+              {(() => {
+                const roleKeys = new Set((ROLE_CRITERIA[entry.jobRole] ?? []).map((c) => c.key));
+                return columns.map(({ key }) => (
+                  <TableCell key={key} className="text-right">
+                    {roleKeys.has(key) ? (entry.scores[key] ?? 0) : <span className="text-zinc-400">—</span>}
+                  </TableCell>
+                ));
+              })()}
               <TableCell className="text-right font-semibold">{entry.totalScore}</TableCell>
             </TableRow>
           ))}
