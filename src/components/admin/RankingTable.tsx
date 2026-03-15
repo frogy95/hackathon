@@ -24,6 +24,7 @@ interface RankingEntry {
   scores: Record<string, number>;
   baseScore: number;
   totalScore: number;
+  editCount: number;
 }
 
 interface ColumnDef {
@@ -87,6 +88,7 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
           <TableRow>
             <TableHead className="w-12">순위</TableHead>
             <TableHead>이름</TableHead>
+            <TableHead className="text-center">재도전</TableHead>
             {allColumns.map(({ key, label, max }) => (
               <TableHead
                 key={key}
@@ -119,6 +121,9 @@ export function RankingTable({ rankings, sessionId, columns }: RankingTableProps
                 >
                   {entry.name}
                 </Link>
+              </TableCell>
+              <TableCell className="text-center text-zinc-500">
+                {entry.editCount > 0 ? entry.editCount : <span className="text-zinc-300">—</span>}
               </TableCell>
               {(() => {
                 const roleKeys = new Set((ROLE_CRITERIA[entry.jobRole] ?? []).map((c) => c.key));

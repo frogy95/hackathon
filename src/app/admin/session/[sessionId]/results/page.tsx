@@ -55,6 +55,7 @@ export default async function ResultsPage({ params }: Props) {
         scores: scoreMap,
         baseScore: sub.baseScore ?? 0,
         totalScore: sub.totalScore ?? 0,
+        editCount: sub.editCount,
       };
     })
   );
